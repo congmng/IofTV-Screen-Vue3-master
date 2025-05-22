@@ -158,10 +158,11 @@ const fluctuateTaskNumbers = () => {
     const res = await groupListApi({Namespace: 'test'});
     console.log(res,'res');
     const curData = res.items;
-    console.log(curData,'curData');
-    task_num.cloud_task_Num = curData.filter((item:any)=>item.status.node.startsWith('Cloud')).length
-    task_num.edge_task_Num = curData.filter((item:any)=>item.status.node.startsWith('Edge')).length
-    task_num.device_task_Num = curData.filter((item:any)=>item.status.node.startsWith('End')).length
+    // 过滤出待调度的任务
+    const readyToDeploy = curData.filter((item:any)=>item.status.node);
+    task_num.cloud_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('Cloud')).length
+    task_num.edge_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('Edge')).length
+    task_num.device_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('End')).length
     task_num.total_task_Num = Number(task_num.cloud_task_Num) + Number(task_num.edge_task_Num) + Number(task_num.device_task_Num)
     // // 随机改变每个任务数的波动（-2 到 2）
     // task_num.total_task_Num += Math.floor(Math.random() * 5) - 2;

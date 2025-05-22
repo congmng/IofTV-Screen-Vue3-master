@@ -14,7 +14,7 @@ const option = ref({});
 const sourceData = {
     'Train':'训练任务',
     'Infer':'推理任务',
-    'Normal':'普通任务',
+    'Normal':'普通任务'
   };
 // 获取组列表
 const groupList = ref([]);
@@ -27,23 +27,25 @@ const getGroupList = async () => {
       item.status.copy_status = 'Unknown';
     }
   })
-  // 数据处理，先以应用状态分类，然后以应用类型分类
-  let status = ['Running','Unknown','ReadyToDeploy','Succeeded'];
+  // 数据处理，先以应用类型分类
+  Object.keys(sourceData).forEach((val:any)=>{
+    curData[val] = curData.filter((v:any)=>v.labels.hasOwnProperty('type')? v.labels.type === val : v);
+  })
+  console.log(curData,'curData');
+  // 再根据应用类型进行应用状态分类
+  let status = ['Unknown','ReadyToDeploy','Running','Succeeded'];
   let lineData = {};
-  status.forEach((item:any)=>{
-    lineData[item] = curData.filter((val:any)=>val.status.copy_status === item);
+  Object.keys(sourceData).forEach((item:any)=>{
+    let curStatusList = []; // 存储所有状态
+    status.forEach((val:any)=>{
+      curStatusList.push(curData[item].filter((v:any)=>v.status.phase === val).length);
+    })
+    // 设置总应用数
+    curStatusList.unshift(curStatusList.reduce((a:any,b:any)=>a+b,0));
+    lineData[item] = curStatusList;
   })
-  // 再将lineData中的数据进行应用类型分类
-  Object.keys(lineData).forEach((item:any)=>{
-      Object.keys(sourceData).forEach((val:any)=>{
-        let curSource = {};
-        curSource[val] = lineData[item].filter((v:any)=> v.source === val);
-        lineData[item] = curSource;
-      })
-  })
-  // 三层级数组
-  console.log(lineData);
-   
+  groupList.value = lineData;
+  console.log(groupList.value,'groupList.value');
 };
 getGroupList();
 
@@ -77,7 +79,7 @@ const setOption = (newData: any) => {
           color: "#4CAF50", // 蓝色
           borderRadius: [0,0, 0, 0],
         },
-        data: newData.cpu_data.电力,
+        data: groupList.value.Train,
       },
       {
         name: "推理任务",
@@ -86,7 +88,7 @@ const setOption = (newData: any) => {
         itemStyle: {
           color: "#F44336", // 绿色
         },
-        data: newData.cpu_data.交通,
+        data: groupList.value.Infer,
       },
       {
         name: "普通任务",
@@ -96,7 +98,7 @@ const setOption = (newData: any) => {
           color: "#FFC107", // 蓝色
           borderRadius: [2, 2, 0, 0],
         },
-        data: newData.cpu_data.制造,
+        data: groupList.value.Normal,
       },
     ]
   };

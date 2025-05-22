@@ -34,6 +34,11 @@ const state = reactive<any>({
 const getList = async () => {
   const res = await groupListApi({Namespace: 'test'});
   const curData = res.items;
+  curData.forEach((item: any, index: number) => {
+    // 判断是否有label属性
+    item.task_type = item.labels.hasOwnProperty('type')?item.labels.type == 'Train'?2:1
+    :0
+  });
   state.list = curData;
 }
 getList();
@@ -84,7 +89,7 @@ const comName = computed(() => {
               ? "训练任务"
               : item.task_type == 2
                 ? "推理任务"
-                : "其他任务" }}</span>
+                : "普通任务" }}</span>
 
             <div class="info addresswrap">
               <span class="labels">运行集群：</span>
