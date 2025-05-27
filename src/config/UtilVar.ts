@@ -19,7 +19,7 @@ const runtimeType:any = {
     },
     //开发环境
     development: () => {
-        UtilVar.baseUrl= `http://183.211.80.74:8899`
+        UtilVar.baseUrl= `http://120.220.95.189:8899`
 
     },
     hash:()=>{
