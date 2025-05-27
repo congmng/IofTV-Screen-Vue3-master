@@ -28,7 +28,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
     base: "./",
     server: {
       host: '0.0.0.0',
-      port: 8112,
+      port: 8878,
       open: false,
       strictPort: false,
       // proxy: {}
