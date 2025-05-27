@@ -19,7 +19,7 @@ const runtimeType:any = {
     },
     //开发环境
     development: () => {
-        UtilVar.baseUrl= `http://clusters.luo980.com:11004`
+        UtilVar.baseUrl= `http://183.211.80.74:8899`
 
     },
     hash:()=>{
