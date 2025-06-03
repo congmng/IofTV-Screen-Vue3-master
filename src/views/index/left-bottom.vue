@@ -7,6 +7,7 @@ import { storeToRefs } from "pinia";
 import EmptyCom from "@/components/empty-com";
 import { ElMessage } from "element-plus";
 import { watch } from "vue";
+import { groupListApi } from "@/api/modules";
 const props = defineProps<{
   list: [
     {
@@ -17,11 +18,16 @@ const props = defineProps<{
     }
   ];
 }>();
+const sourceData = {
+  'HenanEP':'河南电力',
+  'ShandongHS':'山东高速',
+  'Cosmo':'卡奥斯制造'
+};
 
 const settingStore = useSettingStore();
 const { defaultOption, indexConfig } = storeToRefs(settingStore);
 const state = reactive<any>({
-  list: props.list || [],
+  list: [],
   defaultOption: {
     ...defaultOption.value,
     singleHeight: 256,
@@ -30,7 +36,17 @@ const state = reactive<any>({
   scroll: true,
 });
 
-
+const getList = async () => {
+  const res = await groupListApi({NamespaceAll: ''});
+  const curData = res.items;
+  curData.forEach((item: any, index: number) => {
+    // 判断是否有label属性
+    item.task_type = item.labels.hasOwnProperty('type')?item.labels.type == 'Train'?2:1
+    :0
+  });
+  state.list = curData;
+}
+getList();
 const comName = computed(() => {
   if (indexConfig.value.leftBottomSwiper) {
     return SeamlessScroll;
@@ -39,11 +55,11 @@ const comName = computed(() => {
   }
 });
 
-watch(() => props.list, (newVal) => {
-  if (newVal && newVal.length > 0) {
-    state.list = newVal;
-  }
-});
+// watch(() => props.list, (newVal) => {
+//   if (newVal && newVal.length > 0) {
+//     state.list = newVal;
+//   }
+// });
 
 </script>
 
@@ -61,11 +77,12 @@ watch(() => props.list, (newVal) => {
             <div class="flex">
               <div class="info">
                 <span class="labels">任务编号:</span>
-                <span class="text-content zhuyao doudong wangguan"> {{ item.task_id }}</span>
+                <!-- 样式超出显示省略号 -->
+                <span class="text-content zhuyao doudong wangguan"> {{ i+1 }}</span>
               </div>
               <div class="info">
                 <span class="labels">任务名称：</span>
-                <span class="text-content" style="font-size: 12px"> {{ item.task_name }}</span>
+                <span class="text-content" style="display: inline-block; font-size: 12px; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 80px;"> {{ item.name }}</span>
               </div>
             </div>
 
@@ -77,11 +94,17 @@ watch(() => props.list, (newVal) => {
               ? "训练任务"
               : item.task_type == 2
                 ? "推理任务"
-                : "其他任务" }}</span>
+                : "普通任务" }}</span>
 
-            <div class="info addresswrap">
-              <span class="labels">运行集群：</span>
-              <span class="text-content ciyao" style="font-size: 12px"> {{ item.task_node }}</span>
+            <div class="flex addresswrap">
+              <div class="info" style="margin-right: 0px;">
+                <span class="labels">运行集群：</span>
+                <span class="text-content wangguan1" style="font-size: 12px"> {{ item.status.node }}</span>
+              </div>
+              <div class="info">
+                <span class="labels">应用来源：</span>
+                <span class="text-content " style="font-size: 12px"> {{ sourceData[item.namespace] }}</span>
+              </div>
             </div>
           </div>
         </li>
@@ -179,7 +202,13 @@ watch(() => props.list, (newVal) => {
 
     .wangguan {
       color: #1890ff;
+      font-size: 15px;
+      width: 80px;
+      flex-shrink: 0;
       font-weight: 900;
+
+    }
+    .wangguan1{
       font-size: 15px;
       width: 80px;
       flex-shrink: 0;

@@ -18,6 +18,11 @@ export const countDeviceNum=(param:any={})=>{
     return GET(indexUrl.leftTop,param)
 }
 
+export const groupListApi=(param:any={})=>{
+    return GET('/framework/v1/groups',param)
+}
+
+
 /**左中--节点总览 */
 export const countUserNum=(param:any={})=>{
     return GET(indexUrl.leftCenter,param)

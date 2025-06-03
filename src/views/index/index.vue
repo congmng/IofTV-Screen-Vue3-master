@@ -14,6 +14,7 @@ import RightBottom from "./right-bottom.vue";
 import New_Left_Top from "./new_left_top.vue";
 import new_center_Bottom from "./new_center-bottom.vue";
 import { number } from "echarts";
+import { groupListApi } from "@/api/modules";
 
 interface task_detail {
   task_id: string;
@@ -56,7 +57,7 @@ const node_num = reactive({
 const taskList = reactive<task_detail[]>([
   {
     task_id: "1",
-    task_name: "任务17",
+    task_name: "任务1",
     task_type: 1,
     task_node: "云集群1"
   },
@@ -197,6 +198,162 @@ async function fetchStorageUsage() {
 onMounted(() => {
   fetchStorageUsage()
 })
+const fluctuateTaskNumbers = () => {
+  setInterval(async () => {
+    const res = await groupListApi({NamespaceAll: ''});
+    console.log(res,'res');
+    const curData = res.items;
+    // 过滤出待调度的任务
+    const readyToDeploy = curData.filter((item:any)=>item.status.node);
+    task_num.cloud_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('Cloud')).length
+    task_num.edge_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('Edge')).length
+    task_num.device_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('End')).length
+    task_num.total_task_Num = Number(task_num.cloud_task_Num) + Number(task_num.edge_task_Num) + Number(task_num.device_task_Num)
+    console.log(task_num);
+  }, 3000); // 每隔3秒波动一次
+};
+
+fluctuateTaskNumbers();
+
+const task_fluctuateTaskNumbers = () => {
+  setInterval(() => {
+    // 随机改变每个任务数的波动（-2 到 2）
+    task_chartData.cpu_data[0] += Math.floor(Math.random() * 5) - 2;
+    task_chartData.cpu_data[1] += Math.floor(Math.random() * 5) - 2;
+    task_chartData.cpu_data[2] += Math.floor(Math.random() * 5) - 2;
+    task_chartData.cpu_data[3] += Math.floor(Math.random() * 5) - 2;
+
+    // 确保任务数量保持在0以上
+
+
+    // 打印新的任务数
+    console.log(task_num);
+  }, 3000); // 每隔3秒波动一次
+};
+task_fluctuateTaskNumbers();
+const fluctuateNodeNumbers = () => {
+  setInterval(() => {
+    // 随机改变每个节点数的波动（-2 到 2）
+    node_num.total_node_Num += Math.floor(Math.random() * 5) - 2;
+    node_num.cloud_node_Num += Math.floor(Math.random() * 5) - 2;
+    node_num.edge_node_Num += Math.floor(Math.random() * 5) - 2;
+    node_num.device_node_Num += Math.floor(Math.random() * 5) - 2;
+
+    // 确保节点数量保持在0以上
+    node_num.total_node_Num = Math.max(node_num.total_node_Num, 0);
+    node_num.cloud_node_Num = Math.max(node_num.cloud_node_Num, 0);
+    node_num.edge_node_Num = Math.max(node_num.edge_node_Num, 0);
+    node_num.device_node_Num = Math.max(node_num.device_node_Num, 0);
+
+    // 打印新的节点数
+    console.log(node_num);
+  }, 3000); // 每隔3秒波动一次
+};
+
+fluctuateNodeNumbers();  // 启动波动
+
+const fluctuateResources = () => {
+  setInterval(() => {
+    // 遍历所有集群，给 cpu_use, gpu_use, memory_use 添加波动
+    calculateresource.forEach((cluster) => {
+      cluster.cpu_use += Math.floor(Math.random() * 5) - 2; // CPU波动范围 -2 到 2
+      cluster.gpu_use += Math.floor(Math.random() * 5) - 2; // GPU波动范围 -2 到 2
+      cluster.memory_use += Math.floor(Math.random() * 5) - 2; // 内存波动范围 -2 到 2
+
+      // 确保资源使用量不会小于0
+      cluster.cpu_use = Math.max(cluster.cpu_use, 0);
+      cluster.gpu_use = Math.max(cluster.gpu_use, 0);
+      cluster.memory_use = Math.max(cluster.memory_use, 0);
+    });
+
+    // 打印当前的资源使用情况
+    console.log(calculateresource);
+  }, 3000); // 每3秒波动一次
+};
+
+fluctuateResources(); // 启动资源波动
+const fluctuateStoreUsage = () => {
+  setInterval(() => {
+    store_use.forEach((store) => {
+      store.value += Math.floor(Math.random() * 5) - 2; // value波动范围 -2 到 2
+
+      // 确保value不会小于0
+      store.value = Math.max(store.value, 0);
+    });
+
+    // 打印当前的store使用情况
+    console.log("store", store_use);
+  }, 3000); // 每3秒波动一次
+};
+
+fluctuateStoreUsage(); // 启动资源波动
+
+let currentTime = 50;  // 当前的时间（分钟：秒）
+const fluctuateChartData = () => {
+  setInterval(() => {
+    currentTime++; // 时间递增
+
+    // 更新category，按秒递增
+    const newTime = new Date(0);
+    newTime.setMinutes(20);
+    newTime.setSeconds(currentTime);
+    const formattedTime = `${newTime.getMinutes()}:${newTime.getSeconds() < 10 ? '0' + newTime.getSeconds() : newTime.getSeconds()}`;
+
+    chartData.category.push(formattedTime);  // 将新的时间加入 category
+
+    // 随机波动数据，模拟cpu、gpu、memory的变化
+    chartData.cpu_data.push(chartData.cpu_data[chartData.cpu_data.length - 1] + Math.floor(Math.random() * 10) - 5);
+    chartData.gpu_data.push(chartData.gpu_data[chartData.gpu_data.length - 1] + Math.floor(Math.random() * 10) - 5);
+    chartData.memory_data.push(chartData.memory_data[chartData.memory_data.length - 1] + Math.floor(Math.random() * 10) - 5);
+
+    // 保证数据不为负值
+    chartData.cpu_data = chartData.cpu_data.map(val => Math.max(val, 0));
+    chartData.gpu_data = chartData.gpu_data.map(val => Math.max(val, 0));
+    chartData.memory_data = chartData.memory_data.map(val => Math.max(val, 0));
+
+    // 移除超出数组长度的最早数据，只保留最近7个数据
+    if (chartData.category.length > 7) chartData.category.shift();
+    if (chartData.cpu_data.length > 7) chartData.cpu_data.shift();
+    if (chartData.gpu_data.length > 7) chartData.gpu_data.shift();
+    if (chartData.memory_data.length > 7) chartData.memory_data.shift();
+
+    // 打印当前数据
+    console.log(chartData);
+  }, 3000); // 每秒更新一次
+};
+
+// 启动波动更新
+fluctuateChartData();
+
+function getNextTime(lastTime: string): string {
+  const date = new Date(`2023-01-01T${lastTime}`);
+  date.setSeconds(date.getSeconds() + 1); // 递增1秒
+  return date.toTimeString().slice(0, 8); // 格式化成 HH:mm:ss
+}
+
+// 添加数据点
+function addRandomPoint() {
+  // 更新时间
+  const lastTime = net_xData[net_xData.length - 1];
+  const nextTime = getNextTime(lastTime);
+  net_xData.push(nextTime);
+  if (net_xData.length > 6) net_xData.shift(); // 控制最大长度
+
+  // 添加随机波动数据
+  const randomize = (val: number) => Math.max(0, Math.round(val + (Math.random() * 4 - 2)));
+
+  net_yData.push(randomize(net_yData.at(-1)!));
+  net_yData2.push(randomize(net_yData2.at(-1)!));
+  net_yData3.push(randomize(net_yData3.at(-1)!));
+
+  // 保持数组长度一致
+  if (net_yData.length > 20) net_yData.shift();
+  if (net_yData2.length > 20) net_yData2.shift();
+  if (net_yData3.length > 20) net_yData3.shift();
+}
+console.log("net_yData", net_yData);
+// 定时更新（比如每秒）
+setInterval(addRandomPoint, 3000);
 
 
 </script>
