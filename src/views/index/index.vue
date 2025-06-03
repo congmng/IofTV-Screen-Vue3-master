@@ -164,19 +164,6 @@ const fluctuateTaskNumbers = () => {
     task_num.edge_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('Edge')).length
     task_num.device_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('End')).length
     task_num.total_task_Num = Number(task_num.cloud_task_Num) + Number(task_num.edge_task_Num) + Number(task_num.device_task_Num)
-    // // 随机改变每个任务数的波动（-2 到 2）
-    // task_num.total_task_Num += Math.floor(Math.random() * 5) - 2;
-    // task_num.cloud_task_Num += Math.floor(Math.random() * 5) - 2;
-    // task_num.edge_task_Num += Math.floor(Math.random() * 5) - 2;
-    // task_num.device_task_Num += Math.floor(Math.random() * 5) - 2;
-
-    // // 确保任务数量保持在0以上
-    // task_num.total_task_Num = Math.max(task_num.total_task_Num, 0);
-    // task_num.cloud_task_Num = Math.max(task_num.cloud_task_Num, 0);
-    // task_num.edge_task_Num = Math.max(task_num.edge_task_Num, 0);
-    // task_num.device_task_Num = Math.max(task_num.device_task_Num, 0);
-
-    // 打印新的任务数
     console.log(task_num);
   }, 3000); // 每隔3秒波动一次
 };
