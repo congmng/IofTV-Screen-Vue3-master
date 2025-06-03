@@ -155,7 +155,7 @@ const chartData = reactive({
 
 const fluctuateTaskNumbers = () => {
   setInterval(async () => {
-    const res = await groupListApi({Namespace: 'test'});
+    const res = await groupListApi({NamespaceAll: ''});
     console.log(res,'res');
     const curData = res.items;
     // 过滤出待调度的任务

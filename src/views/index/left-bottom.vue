@@ -18,6 +18,11 @@ const props = defineProps<{
     }
   ];
 }>();
+const sourceData = {
+  'HenanEP':'河南电力',
+  'ShandongHS':'山东高速',
+  'Cosmo':'卡奥斯制造'
+};
 
 const settingStore = useSettingStore();
 const { defaultOption, indexConfig } = storeToRefs(settingStore);
@@ -32,7 +37,7 @@ const state = reactive<any>({
 });
 
 const getList = async () => {
-  const res = await groupListApi({Namespace: 'test'});
+  const res = await groupListApi({NamespaceAll: ''});
   const curData = res.items;
   curData.forEach((item: any, index: number) => {
     // 判断是否有label属性
@@ -91,9 +96,15 @@ const comName = computed(() => {
                 ? "推理任务"
                 : "普通任务" }}</span>
 
-            <div class="info addresswrap">
-              <span class="labels">运行集群：</span>
-              <span class="text-content ciyao" style="font-size: 12px"> {{ item.status.node }}</span>
+            <div class="flex addresswrap">
+              <div class="info" style="margin-right: 0px;">
+                <span class="labels">运行集群：</span>
+                <span class="text-content wangguan1" style="font-size: 12px"> {{ item.status.node }}</span>
+              </div>
+              <div class="info">
+                <span class="labels">应用来源：</span>
+                <span class="text-content " style="font-size: 12px"> {{ sourceData[item.namespace] }}</span>
+              </div>
             </div>
           </div>
         </li>
@@ -191,7 +202,13 @@ const comName = computed(() => {
 
     .wangguan {
       color: #1890ff;
+      font-size: 15px;
+      width: 80px;
+      flex-shrink: 0;
       font-weight: 900;
+
+    }
+    .wangguan1{
       font-size: 15px;
       width: 80px;
       flex-shrink: 0;

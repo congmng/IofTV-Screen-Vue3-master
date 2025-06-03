@@ -12,15 +12,16 @@ const props = defineProps({
 
 const option = ref({});
 const sourceData = {
-    'Train':'训练任务',
-    'Infer':'推理任务',
-    'Normal':'普通任务'
+    'HenanEP':'河南电力',
+    'ShandongHS':'山东高速',
+    'Cosmo':'卡奥斯制造'
   };
 // 获取组列表
 const groupList = ref([]);
 const getGroupList = async () => {
-  const res = await groupListApi({Namespace: 'test'});
-  const curData = res.items;
+  // const [res1, res2, res3]  = await Promise.all([groupListApi({Namespace: 'HenanEP'}), groupListApi({Namespace: 'ShandongHS'}), groupListApi({Namespace: 'Cosmo'})]);
+  let res1 = await groupListApi({NamespaceAll: ''});
+  const curData = res1.items;
   // 将 Unknown 和 Pending 合并
   curData.forEach((item:any)=>{
     if(item.status.copy_status === 'Unknown' || item.status.copy_status === 'Pending'){
@@ -29,7 +30,7 @@ const getGroupList = async () => {
   })
   // 数据处理，先以应用类型分类
   Object.keys(sourceData).forEach((val:any)=>{
-    curData[val] = curData.filter((v:any)=>v.labels.hasOwnProperty('type')? v.labels.type === val : v);
+    curData[val] = curData.filter((v:any)=> v.namespace === val);
   })
   console.log(curData,'curData');
   // 再根据应用类型进行应用状态分类
@@ -71,7 +72,7 @@ const setOption = (newData: any) => {
     },
     series: [
       {
-        name: "训练任务",
+        name: "河南电力",
         type: "bar",
         stack: "任务数",
         barWidth: 20,
@@ -79,26 +80,26 @@ const setOption = (newData: any) => {
           color: "#4CAF50", // 蓝色
           borderRadius: [0,0, 0, 0],
         },
-        data: groupList.value.Train,
+        data: groupList.value.HenanEP,
       },
       {
-        name: "推理任务",
+        name: "山东高速",
         type: "bar",
         stack: "任务数",
         itemStyle: {
           color: "#F44336", // 绿色
         },
-        data: groupList.value.Infer,
+        data: groupList.value.ShandongHS,
       },
       {
-        name: "普通任务",
+        name: "卡奥斯制造",
         type: "bar",
         stack: "任务数",
         itemStyle: {
           color: "#FFC107", // 蓝色
           borderRadius: [2, 2, 0, 0],
         },
-        data: groupList.value.Normal,
+        data: groupList.value.Cosmo,
       },
     ]
   };
