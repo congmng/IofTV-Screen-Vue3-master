@@ -20,7 +20,7 @@ watch(
   () => props.data,
   (newData) => {
     chartData.value = newData;
-    console.log("chartData", chartData.value);
+    //console.log("chartData", chartData.value);
   },
   { deep: true } // ✅ 深度监听（数组对象）
 );

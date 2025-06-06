@@ -32,7 +32,7 @@ const getGroupList = async () => {
   Object.keys(sourceData).forEach((val:any)=>{
     curData[val] = curData.filter((v:any)=> v.namespace === val);
   })
-  console.log(curData,'curData');
+  //console.log(curData,'curData');
   // 再根据应用类型进行应用状态分类
   let status = ['Unknown','ReadyToDeploy','Running','Succeeded'];
   let lineData = {};
@@ -46,7 +46,7 @@ const getGroupList = async () => {
     lineData[item] = curStatusList;
   })
   groupList.value = lineData;
-  console.log(groupList.value,'groupList.value');
+  //console.log(groupList.value,'groupList.value');
 };
 getGroupList();
 

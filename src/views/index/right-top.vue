@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { graphic } from "echarts/core";
 import { ref, defineProps, onMounted, watch } from "vue";
+import type { PropType } from 'vue';
 // 接收父组件传递的 props 数据
 const props = defineProps({
+  name: {
+    type: Array as PropType<string[]>,  // 明确指定是字符串数组
+    required: true,
+    default: () => ['default', 'names'],  // 默认值
+  },
   xData: {
     type: Array,
     required: true,
@@ -89,7 +95,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
         type: "line",
         smooth: true,
         symbol: "none", // 去除点
-        name: "边节点1-天数盒子固网",
+        name: props.name[0],
         color: "rgba(252,144,16,.7)",
         areaStyle: {
           color: new graphic.LinearGradient(0, 0, 0, 1, [
@@ -103,7 +109,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
         type: "line",
         smooth: true,
         symbol: "none", // 去除点
-        name: "边节点2-天数盒子wifi",
+        name: props.name[1],
         color: "rgba(9,202,243,.7)",
         areaStyle: {
           color: new graphic.LinearGradient(0, 0, 0, 1, [
@@ -117,7 +123,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
         type: "line",
         smooth: true,
         symbol: "none", // 去除点
-        name: "边节点3-天数盒子wifi",
+        name: props.name[2],
         color: "rgba(9,100,243,.7)",
         areaStyle: {
           color: new graphic.LinearGradient(0, 0, 0, 1, [

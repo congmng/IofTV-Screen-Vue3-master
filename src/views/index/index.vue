@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, watch, withDefaults } from "vue";
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 
 import ItemWrap from "@/components/item-wrap";
 import LeftTop from "./left-top.vue";
@@ -12,6 +12,8 @@ import RightTop from "./right-top.vue";
 import RightCenter from "./right-center.vue";
 import RightBottom from "./right-bottom.vue";
 import New_Left_Top from "./new_left_top.vue";
+import new_daping_1 from "./new_daping_1.vue";
+import new_daping_2 from "./new_daping_2.vue";
 import new_center_Bottom from "./new_center-bottom.vue";
 import { number } from "echarts";
 import { groupListApi } from "@/api/modules";
@@ -40,18 +42,21 @@ interface calculateresource {
   memory_use: number;
 }
 
+const k8s_class3_url = "http://10.212.67.19:8000";
+//const k8s_class3_url = "http://120.220.95.189:18888";
+
 const task_num = reactive({
-  total_task_Num: 100,
-  cloud_task_Num: 60,
-  edge_task_Num: 30,
-  device_task_Num: 10
+  total_task_Num: 0,
+  cloud_task_Num: 0,
+  edge_task_Num: 0,
+  device_task_Num: 0
 });
 
 const node_num = reactive({
-  total_node_Num: 50,
-  cloud_node_Num: 20,
-  edge_node_Num: 20,
-  device_node_Num: 10
+  total_node_Num: 0,
+  cloud_node_Num: 0,
+  edge_node_Num: 0,
+  device_node_Num: 0
 });
 
 const taskList = reactive<task_detail[]>([
@@ -61,24 +66,6 @@ const taskList = reactive<task_detail[]>([
     task_type: 1,
     task_node: "云集群1"
   },
-  {
-    task_id: "2",
-    task_name: "任务2",
-    task_type: 2,
-    task_node: "边集群1"
-  },
-  {
-    task_id: "3",
-    task_name: "任务3",
-    task_type: 0,
-    task_node: "边集群2"
-  },
-  {
-    task_id: "4",
-    task_name: "任务4",
-    task_type: 2,
-    task_node: "端设备1"
-  }
 ]);
 
 const store_use = reactive<storeuse[]>([
@@ -133,29 +120,25 @@ const calculateresource = reactive<calculateresource[]>([
   },
 ]);
 
+const net_name = reactive(["边节点1-天数盒子固网", "边节点2-天数盒子wifi", "边节点3-天数盒子wifi"]);
 const net_xData = reactive(["19:45:00", "19:45:10", "19:45:20", "19:45:30", "19:45:40", "19:45:50", "19:46:00"]);
 const net_yData = reactive([10, 17, 15, 14, 15, 16, 17]);
 const net_yData2 = reactive([30, 20, 11, 20, 36, 11, 22]);
 const net_yData3 = reactive([20, 40, 30, 40, 42, 51, 30]);
-/*
+
 const task_chartData = reactive({
-  category: ['应用总数', '调度中', '运行中', '已完成'],
-  cpu_data: [100, 40, 30, 30],
-});
-*/
-const task_chartData = reactive({
-  category: ['总应用数', '排队中', '运行中','已完成'],
+  category: ['总应用数', '排队中', '运行中', '已完成'],
   cpu_data: {
-    电力: [100, 20, 10,10],
-    交通: [30, 50, 80,10],
-    制造: [3, 9, 12,10],
+    电力: [0, 0, 0, 0],
+    交通: [0, 0, 0, 0],
+    制造: [0, 0, 0, 0],
   }
 });
 const chartData = reactive({
-  category: ['20:44', '20:45', '20:46', '20:47', '20:48', '20:49', '20:50',],
-  cpu_data: [10, 20, 15, 30, 40, 20, 30],
-  gpu_data: [45, 55, 65, 75, 70, 75, 80],
-  memory_data: [50, 60, 58, 65, 60, 65, 70]
+  category: [],
+  cpu_data: [],
+  gpu_data: [],
+  memory_data: []
 });
 
 const device_num = reactive([
@@ -173,11 +156,40 @@ const device_num = reactive([
   }
 ]);
 
-//const store_use = reactive<storeuse[]>([])
 
+const total_data = reactive({
+  cloudnum: 0,
+  edgenum: 0,
+  devicenum: 0,
+  cpu: 0,
+  gpu: 0,
+  memory: 0,
+  storage: 0
+});
+
+let fetchTotalUsageInterval: number | null = null
+async function fetchTotalUsage() {
+  try {
+    const response = await fetch(k8s_class3_url+'/dashboard/server-overview')
+    const data = await response.json()
+  //  console.log('total资源信息：', data);
+    total_data.cloudnum = data.cloud_size;
+    total_data.edgenum = data.edge_size;
+    total_data.devicenum = data.device_size;
+    total_data.cpu = data.cpu_size;
+    total_data.gpu = data.gpu_size;
+    total_data.memory = Math.trunc(data.ram_size/1024/1024/1024);
+    total_data.storage = Math.trunc(data.disk_size/1024/1024/1024/1024);
+  } catch (error) {
+    console.error('获取信息失败：', error)
+  }
+}
+fetchCalculateUsage();
+
+let fetchInterval: number | null = null
 async function fetchStorageUsage() {
   try {
-    const response = await fetch('http://10.212.67.19:8000/dashboard/storage')
+    const response = await fetch(k8s_class3_url+'/dashboard/storage')
     const data = await response.json()
 
     if (Array.isArray(data.storage_info)) {
@@ -194,22 +206,102 @@ async function fetchStorageUsage() {
   }
 }
 
+let fetchCalculateUsageInterval: number | null = null
+async function fetchCalculateUsage() {
+  try {
+    const response = await fetch(k8s_class3_url+'/dashboard/compute')
+    const data = await response.json()
+    // console.log('计算资源信息：', data);
+    const date = new Date();
+    const hours = date.getHours();    // 时 (0-23)
+    const minutes = date.getMinutes(); // 分 (0-59)
+    const seconds = date.getSeconds(); // 秒 (0-59)
+    const formattedTime = `${hours}:${minutes}:${seconds}`;
+    const cpu = data.total.cpu_usage || 0;
+    const gpu = data.total.gpu_usage || 0;
+    const memory = data.total.ram_usage || 0;
+
+    chartData.category.push(formattedTime);
+    chartData.cpu_data.push(cpu);
+    chartData.gpu_data.push(gpu);
+    chartData.memory_data.push(memory);
+
+    // 保持数组大小固定为7
+    if (chartData.category.length > 7) {
+      chartData.category.shift(); // 移除第一个元素
+      chartData.cpu_data.shift();
+      chartData.gpu_data.shift();
+      chartData.memory_data.shift();
+    }
+  } catch (error) {
+    console.error('获取信息失败：', error)
+  }
+}
+fetchCalculateUsage();
+
+
+let fetchNetworkUsageInterval: number | null = null
+async function fetchNetworkUsage() {
+  try {
+    const response = await fetch(k8s_class3_url+'/dashboard/network')
+    const data = await response.json()
+    console.log('网络资源信息：', data);
+    const date = new Date();
+    const hours = date.getHours();    // 时 (0-23)
+    const minutes = date.getMinutes(); // 分 (0-59)
+    const seconds = date.getSeconds(); // 秒 (0-59)
+    const formattedTime = `${hours}:${minutes}:${seconds}`;
+    net_name[0] = '名称:' + data.device_network[0].device_name + ' 类型：' + data.device_network[0].network_type;
+    net_name[1] = '名称:' + data.device_network[1].device_name + ' 类型：' + data.device_network[1].network_type;
+    net_name[2] = '名称:' + data.device_network[2].device_name + ' 类型：' + data.device_network[2].network_type;
+    console.log('网络名称：', net_name);
+    net_xData.push(formattedTime);
+    net_yData.push(data.device_network[0].latency);
+    net_yData2.push(data.device_network[1].latency);
+    net_yData3.push(data.device_network[2].latency);
+    if (net_xData.length > 7) {
+      net_xData.shift(); // 移除第一个元素
+      net_yData.shift();
+      net_yData2.shift();
+      net_yData3.shift();
+    }
+
+    // 保持数组大小固定为7
+  } catch (error) {
+    console.error('获取信息失败：', error)
+  }
+}
 
 onMounted(() => {
-  fetchStorageUsage()
+  fetchStorageUsage();
+  fetchCalculateUsage();
+  fetchNetworkUsage();
+  fetchTotalUsage() 
+  fetchInterval = window.setInterval(fetchStorageUsage, 3000)
+  fetchCalculateUsageInterval = window.setInterval(fetchCalculateUsage, 3000)
+  fetchNetworkUsageInterval = window.setInterval(fetchNetworkUsage, 3000)
+  fetchTotalUsageInterval = window.setInterval(fetchTotalUsage, 3000)
+})
+
+onUnmounted(() => {
+  // 组件卸载时清除定时器
+  if (fetchInterval) {
+    clearInterval(fetchInterval)
+    fetchInterval = null
+  }
 })
 const fluctuateTaskNumbers = () => {
   setInterval(async () => {
-    const res = await groupListApi({NamespaceAll: ''});
-    console.log(res,'res');
+    const res = await groupListApi({ NamespaceAll: '' });
+    // console.log(res,'res');
     const curData = res.items;
     // 过滤出待调度的任务
-    const readyToDeploy = curData.filter((item:any)=>item.status.node);
-    task_num.cloud_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('Cloud')).length
-    task_num.edge_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('Edge')).length
-    task_num.device_task_Num = readyToDeploy.filter((item:any)=>item.status.node.startsWith('End')).length
+    const readyToDeploy = curData.filter((item: any) => item.status.node);
+    task_num.cloud_task_Num = readyToDeploy.filter((item: any) => item.status.node.startsWith('Cloud')).length
+    task_num.edge_task_Num = readyToDeploy.filter((item: any) => item.status.node.startsWith('Edge')).length
+    task_num.device_task_Num = readyToDeploy.filter((item: any) => item.status.node.startsWith('End')).length
     task_num.total_task_Num = Number(task_num.cloud_task_Num) + Number(task_num.edge_task_Num) + Number(task_num.device_task_Num)
-    console.log(task_num);
+    //  console.log(task_num);
   }, 3000); // 每隔3秒波动一次
 };
 
@@ -227,7 +319,7 @@ const task_fluctuateTaskNumbers = () => {
 
 
     // 打印新的任务数
-    console.log(task_num);
+    //  console.log(task_num);
   }, 3000); // 每隔3秒波动一次
 };
 task_fluctuateTaskNumbers();
@@ -244,9 +336,6 @@ const fluctuateNodeNumbers = () => {
     node_num.cloud_node_Num = Math.max(node_num.cloud_node_Num, 0);
     node_num.edge_node_Num = Math.max(node_num.edge_node_Num, 0);
     node_num.device_node_Num = Math.max(node_num.device_node_Num, 0);
-
-    // 打印新的节点数
-    console.log(node_num);
   }, 3000); // 每隔3秒波动一次
 };
 
@@ -267,7 +356,7 @@ const fluctuateResources = () => {
     });
 
     // 打印当前的资源使用情况
-    console.log(calculateresource);
+    //   console.log(calculateresource);
   }, 3000); // 每3秒波动一次
 };
 
@@ -282,48 +371,16 @@ const fluctuateStoreUsage = () => {
     });
 
     // 打印当前的store使用情况
-    console.log("store", store_use);
+    //   console.log("store", store_use);
   }, 3000); // 每3秒波动一次
 };
 
 fluctuateStoreUsage(); // 启动资源波动
 
 let currentTime = 50;  // 当前的时间（分钟：秒）
-const fluctuateChartData = () => {
-  setInterval(() => {
-    currentTime++; // 时间递增
 
-    // 更新category，按秒递增
-    const newTime = new Date(0);
-    newTime.setMinutes(20);
-    newTime.setSeconds(currentTime);
-    const formattedTime = `${newTime.getMinutes()}:${newTime.getSeconds() < 10 ? '0' + newTime.getSeconds() : newTime.getSeconds()}`;
 
-    chartData.category.push(formattedTime);  // 将新的时间加入 category
 
-    // 随机波动数据，模拟cpu、gpu、memory的变化
-    chartData.cpu_data.push(chartData.cpu_data[chartData.cpu_data.length - 1] + Math.floor(Math.random() * 10) - 5);
-    chartData.gpu_data.push(chartData.gpu_data[chartData.gpu_data.length - 1] + Math.floor(Math.random() * 10) - 5);
-    chartData.memory_data.push(chartData.memory_data[chartData.memory_data.length - 1] + Math.floor(Math.random() * 10) - 5);
-
-    // 保证数据不为负值
-    chartData.cpu_data = chartData.cpu_data.map(val => Math.max(val, 0));
-    chartData.gpu_data = chartData.gpu_data.map(val => Math.max(val, 0));
-    chartData.memory_data = chartData.memory_data.map(val => Math.max(val, 0));
-
-    // 移除超出数组长度的最早数据，只保留最近7个数据
-    if (chartData.category.length > 7) chartData.category.shift();
-    if (chartData.cpu_data.length > 7) chartData.cpu_data.shift();
-    if (chartData.gpu_data.length > 7) chartData.gpu_data.shift();
-    if (chartData.memory_data.length > 7) chartData.memory_data.shift();
-
-    // 打印当前数据
-    console.log(chartData);
-  }, 3000); // 每秒更新一次
-};
-
-// 启动波动更新
-fluctuateChartData();
 
 function getNextTime(lastTime: string): string {
   const date = new Date(`2023-01-01T${lastTime}`);
@@ -351,7 +408,7 @@ function addRandomPoint() {
   if (net_yData2.length > 20) net_yData2.shift();
   if (net_yData3.length > 20) net_yData3.shift();
 }
-console.log("net_yData", net_yData);
+//console.log("net_yData", net_yData);
 // 定时更新（比如每秒）
 setInterval(addRandomPoint, 3000);
 
@@ -362,8 +419,6 @@ setInterval(addRandomPoint, 3000);
   <div class="index-box">
     <div class="contetn_left">
       <ItemWrap class="contetn_left-top contetn_lr-item" title="应用总览">
-        <!--LeftCenter :totalNum=node_num.total_node_Num :cloudNum=node_num.cloud_node_Num :edgeNum=node_num.edge_node_Num
-          :deviceNum=node_num.device_node_Num /-->
         <New_Left_Top :newData="task_chartData" />
       </ItemWrap>
       <ItemWrap class="contetn_left-center contetn_lr-item" title="任务总览">
@@ -376,15 +431,15 @@ setInterval(addRandomPoint, 3000);
       </ItemWrap>
     </div>
     <div class="contetn_center">
+
       <ItemWrap class="contetn_center-top" title="云边端拓扑示意图">
-        <!--CenterMap  title="设备分布图" /-->
-        <img src="@/assets/img/大屏4.png" class="center-image">
+
+          <new_daping_2 :cloudnum="total_data.cloudnum" :edgenum="total_data.edgenum" :devicenum="total_data.devicenum" :cpu="total_data.cpu" :memory="total_data.memory" :gpu="total_data.gpu" :storage="total_data.storage"/>
+
       </ItemWrap>
       <ItemWrap class="contetn_center-bottom" title="云边端设备总览">
-        <!--RightTop :xData="net_xData" :yData="net_yData" :yData2="net_yData2" :yData3="net_yData3" /-->
-        <!--LeftCenter :totalNum=node_num.total_node_Num :cloudNum=node_num.cloud_node_Num :edgeNum=node_num.edge_node_Num
-          :deviceNum=node_num.device_node_Num /-->
-        <new_center_Bottom :virtual_-num="device_num[0].number" :docker_-num="device_num[1].number" :meterial_-num="device_num[2].number"></new_center_Bottom>
+        <new_center_Bottom :virtual_-num="device_num[0].number" :docker_-num="device_num[1].number"
+          :meterial_-num="device_num[2].number"></new_center_Bottom>
       </ItemWrap>
     </div>
     <div class="contetn_right">
@@ -394,7 +449,7 @@ setInterval(addRandomPoint, 3000);
       </ItemWrap>
       <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端多种接入网络" style="padding: 0 10px 16px 10px">
         <!--CenterBottom :newData="chartData" /-->
-        <RightTop :xData="net_xData" :yData="net_yData" :yData2="net_yData2" :yData3="net_yData3" />
+        <RightTop :xData="net_xData" :yData="net_yData" :yData2="net_yData2" :yData3="net_yData3" :name="net_name" />
 
       </ItemWrap>
       <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端存储资源总览 ">
@@ -427,15 +482,17 @@ setInterval(addRandomPoint, 3000);
 
 .contetn_center {
   flex: 1;
-  margin: 0 54px;
+  margin: 0 10px;
   display: flex;
+  width: 750px;
   flex-direction: column;
   justify-content: space-around;
 
   .contetn_center-bottom {
     height: 315px;
   }
-    .contetn_center-top {
+
+  .contetn_center-top {
     height: 650px;
   }
 
@@ -451,4 +508,6 @@ setInterval(addRandomPoint, 3000);
 .contetn_lr-item {
   height: 310px;
 }
+
+
 </style>
