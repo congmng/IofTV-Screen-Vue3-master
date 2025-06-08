@@ -26,6 +26,7 @@ const props = defineProps<{
 
 // Reactive data for nodes and resources
 const nodes = reactive<Node[]>([
+    { title: '总计节点数量', value: (props.cloudnum+props.edgenum+props.devicenum)+'个节点', type: 'total-node' },
     { title: '云侧节点数量', value: props.cloudnum+'个节点', type: 'cloud-node' },
     { title: '边侧节点数量', value: props.edgenum+'个节点', type: 'edge-node' },
     { title: '端侧节点数量', value: props.devicenum+'个节点', type: 'device-node' }
@@ -418,6 +419,10 @@ const particleCount = 20;
     font-weight: 700;
 }
 
+.total-node {
+    background: linear-gradient(145deg, #0d2e55, rgba(32, 191, 85, 0.1));
+}
+
 .cloud-node {
     background: linear-gradient(145deg, #0d2e55, rgba(32, 191, 85, 0.1));
 }
@@ -428,6 +433,10 @@ const particleCount = 20;
 
 .device-node {
     background: linear-gradient(145deg, #0d2e55, rgba(32, 191, 85, 0.2));
+}
+
+.total-node .item-value {
+    color: #a0ffd0;
 }
 
 .cloud-node .item-value {

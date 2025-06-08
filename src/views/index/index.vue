@@ -60,12 +60,6 @@ const node_num = reactive({
 });
 
 const taskList = reactive<task_detail[]>([
-  {
-    task_id: "1",
-    task_name: "任务1",
-    task_type: 1,
-    task_node: "云集群1"
-  },
 ]);
 
 const store_use = reactive<storeuse[]>([
@@ -432,12 +426,12 @@ setInterval(addRandomPoint, 3000);
     </div>
     <div class="contetn_center">
 
-      <ItemWrap class="contetn_center-top" title="云边端拓扑示意图">
+      <ItemWrap class="contetn_center-top" title="云边端资源总览">
 
           <new_daping_2 :cloudnum="total_data.cloudnum" :edgenum="total_data.edgenum" :devicenum="total_data.devicenum" :cpu="total_data.cpu" :memory="total_data.memory" :gpu="total_data.gpu" :storage="total_data.storage"/>
 
       </ItemWrap>
-      <ItemWrap class="contetn_center-bottom" title="云边端设备总览">
+      <ItemWrap class="contetn_center-bottom" title="云边端资源纳管总览">
         <new_center_Bottom :virtual_-num="device_num[0].number" :docker_-num="device_num[1].number"
           :meterial_-num="device_num[2].number"></new_center_Bottom>
       </ItemWrap>

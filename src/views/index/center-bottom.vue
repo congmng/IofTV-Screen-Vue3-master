@@ -135,7 +135,10 @@ watch(
 </script>
 
 <template>
-  <v-chart class="chart" :option="option" v-if="JSON.stringify(option) != '{}'" />
+    <v-chart class="chart" :option="option" v-if="JSON.stringify(option) != '{}'" />
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped>
+
+
+</style>

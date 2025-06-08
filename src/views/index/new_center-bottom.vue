@@ -30,26 +30,28 @@ watch(
 
 
 <template>
-  <ul class="user_Overview flex">
-    <li class="user_Overview-item" style="color: #00fdfa">
-      <div class="user_Overview_nums allnum">
-        <CountUp :endVal="state.total_task_Num" :duration="duration" />
-      </div>
-      <p>虚拟机数</p>
-    </li>
-    <li class="user_Overview-item" style="color: #07f7a8">
-      <div class="user_Overview_nums online">
-        <CountUp :endVal="state.edge_task_Num" :duration="duration" />
-      </div>
-      <p>容器数</p>
-    </li>
-    <li class="user_Overview-item" style="color: #e3b337">
-      <div class="user_Overview_nums offline">
-        <CountUp :endVal="state.cloud_task_Num" :duration="duration" />
-      </div>
-      <p>裸金属数</p>
-    </li>
-  </ul>
+  <div class="zoom-container" style="transform: scale(1.1)">
+    <ul class="user_Overview flex">
+      <li class="user_Overview-item" style="color: #00fdfa">
+        <div class="user_Overview_nums allnum">
+          <CountUp :endVal="state.total_task_Num" :duration="duration" />
+        </div>
+        <p>虚拟机数</p>
+      </li>
+      <li class="user_Overview-item" style="color: #07f7a8">
+        <div class="user_Overview_nums online">
+          <CountUp :endVal="state.edge_task_Num" :duration="duration" />
+        </div>
+        <p>容器数</p>
+      </li>
+      <li class="user_Overview-item" style="color: #e3b337">
+        <div class="user_Overview_nums offline">
+          <CountUp :endVal="state.cloud_task_Num" :duration="duration" />
+        </div>
+        <p>裸金属数</p>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <style scoped lang="scss">
