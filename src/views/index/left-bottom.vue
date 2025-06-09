@@ -44,7 +44,10 @@ const getList = async () => {
     item.task_type = item.labels.hasOwnProperty('type')?item.labels.type == 'Train'?2:1
     :0
   });
-  state.list = curData;
+  const newList = Object.keys(sourceData).map((key: string) => {
+    return curData.filter((item: any) => item.namespace === key);
+  });
+  state.list = newList.flat();
 }
 getList();
 const comName = computed(() => {
@@ -78,11 +81,11 @@ const comName = computed(() => {
               <div class="info">
                 <span class="labels">任务编号:</span>
                 <!-- 样式超出显示省略号 -->
-                <span class="text-content zhuyao doudong wangguan"> {{ i+1 }}</span>
+                <span class="text-content zhuyao doudong wangguan" style="width: 40px;"> {{ i+1 }}</span>
               </div>
               <div class="info">
                 <span class="labels">任务名称：</span>
-                <span class="text-content" style="display: inline-block; font-size: 12px; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 80px;"> {{ item.name }}</span>
+                <span class="text-content" style="display: inline-block; font-size: 12px; vertical-align: middle; overflow: hidden; white-space: nowrap; width: 155px;"> {{ item.name }}</span>
               </div>
             </div>
 
