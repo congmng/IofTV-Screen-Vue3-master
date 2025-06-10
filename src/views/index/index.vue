@@ -126,15 +126,15 @@ const chartData = reactive({
 const device_num = reactive([
   {
     name: '虚拟机数',
-    number: 10
+    number: 0
   },
   {
     name: '容器数',
-    number: 10
+    number: 0
   },
   {
     name: '裸金属数',
-    number: 10
+    number: 0
   }
 ]);
 
@@ -178,6 +178,7 @@ async function fetchTotalUsage() {
     total_data.gpu = data.gpu_size;
     total_data.memory = Math.trunc(data.ram_size/1024/1024/1024);
     total_data.storage = Math.trunc(data.disk_size/1024/1024/1024/1024);
+    console.log('total资源信息：', total_data);
   } catch (error) {
     console.error('获取信息失败：', error)
   }

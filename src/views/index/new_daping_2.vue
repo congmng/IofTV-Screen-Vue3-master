@@ -55,9 +55,10 @@ watch(
   }),
   (newProps) => {
     // 更新 nodes
-    nodes[0].value = `${newProps.cloudnum}个节点`;
-    nodes[1].value = `${newProps.edgenum}个节点`;
-    nodes[2].value = `${newProps.devicenum}个节点`;
+    nodes[0].value = `${newProps.cloudnum+newProps.edgenum+newProps.devicenum}个节点`;
+    nodes[1].value = `${newProps.cloudnum}个节点`;
+    nodes[2].value = `${newProps.edgenum}个节点`;
+    nodes[3].value = `${newProps.devicenum}个节点`;
 
     // 更新 resources
     resources[0].value = `${newProps.cpu}核`;
