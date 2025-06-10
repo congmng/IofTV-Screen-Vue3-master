@@ -33,6 +33,7 @@ interface MapNode {
 interface storeuse {
   name: string;
   value: number;
+  layer: string;
 }
 
 interface calculateresource {
@@ -65,32 +66,19 @@ const taskList = reactive<task_detail[]>([
 const store_use = reactive<storeuse[]>([
   {
     name: "云集群1",
-    value: 10
-  },
-  {
-    name: "云集群2",
-    value: 8
+    value: 10,
+    layer: "cloud"
   },
   {
     name: "边集群1",
-    value: 15
+    value: 8,
+    layer: "edge"
   },
   {
-    name: "边集群2",
-    value: 17
+    name: "端集群1",
+    value: 15,
+    layer: "device"
   },
-  {
-    name: "边集群3",
-    value: 11
-  },
-  {
-    name: "端设备1",
-    value: 2
-  },
-  {
-    name: "端设备2",
-    value: 4
-  }
 ]);
 
 const calculateresource = reactive<calculateresource[]>([
@@ -150,6 +138,22 @@ const device_num = reactive([
   }
 ]);
 
+let fetchVirtualUsageInterval: number | null = null
+async function fetchVirtualUsage() {
+  try {
+    const response = await fetch(k8s_class3_url+'/containers/counts')
+    const data = await response.json()
+   // console.log('virtual total资源信息：', data);
+    device_num[0].number = data.total_vms;
+    device_num[1].number = data.total_containers;
+    device_num[2].number = data.total_metal_devices||0;
+   // console.log('虚拟机数：', device_num);
+  } catch (error) {
+    console.error('获取信息失败：', error)
+  }
+}
+fetchVirtualUsage();
+
 
 const total_data = reactive({
   cloudnum: 0,
@@ -181,17 +185,49 @@ async function fetchTotalUsage() {
 fetchCalculateUsage();
 
 let fetchInterval: number | null = null
+
+const typePriority = { cloud: 1, edge: 2, device: 3 };
+
+// 转换函数（含排序）
+const convertToDiskUse = (data) => {
+  type NodeType = "cloud" | "edge" | "device";
+  // const data1=toRaw(data.value);
+  const typeCount = { cloud: 0, edge: 0, device: 0 };
+  const converted = data.storage_info.map(item => {
+    const type: NodeType = item.layer as NodeType;;
+    typeCount[type] += 1;
+
+    let namePrefix;
+    switch (type) {
+      case 'cloud': namePrefix = '云节点'; break;
+      case 'edge': namePrefix = '边节点'; break;
+      case 'device': namePrefix = '端节点'; break;
+      default: namePrefix = '节点';
+    }
+    const name = `${namePrefix}${typeCount[type]}`;
+    const value = item.used_size;
+    const layer = item.layer;
+    return { name,value,layer };
+  }
+
+  );
+  console.log('转换后的存储信息：', converted);
+  // 按类型优先级排序（云 → 边 → 端）
+  return converted.sort((a, b) => typePriority[a.type] - typePriority[b.type]);
+};
 async function fetchStorageUsage() {
   try {
     const response = await fetch(k8s_class3_url+'/dashboard/storage')
     const data = await response.json()
-
-    if (Array.isArray(data.storage_info)) {
+    //console.log('存储资源信息：', data);
+    const data1= convertToDiskUse(data);
+    console.log('转换后的存储信息：', data,data1);
+    if (Array.isArray(data1)) {
       // 替换整个 store_use 的内容
       store_use.splice(0, store_use.length, 
-        ...data.storage_info.map((item: any) => ({
+        ...data1.map((item: any) => ({
           name: item.name,
-          value: Number(item.used_size/1024/1024/1024) || 0
+          value: Number(item.value/1024/1024/1024) || 0
         }))
       )
     }
@@ -239,7 +275,7 @@ async function fetchNetworkUsage() {
   try {
     const response = await fetch(k8s_class3_url+'/dashboard/network')
     const data = await response.json()
-    console.log('网络资源信息：', data);
+   // console.log('网络资源信息：', data);
     const date = new Date();
     const hours = date.getHours();    // 时 (0-23)
     const minutes = date.getMinutes(); // 分 (0-59)
@@ -248,7 +284,7 @@ async function fetchNetworkUsage() {
     net_name[0] = '名称:' + data.device_network[0].device_name + ' 类型：' + data.device_network[0].network_type;
     net_name[1] = '名称:' + data.device_network[1].device_name + ' 类型：' + data.device_network[1].network_type;
     net_name[2] = '名称:' + data.device_network[2].device_name + ' 类型：' + data.device_network[2].network_type;
-    console.log('网络名称：', net_name);
+   // console.log('网络名称：', net_name);
     net_xData.push(formattedTime);
     net_yData.push(data.device_network[0].latency);
     net_yData2.push(data.device_network[1].latency);
@@ -275,6 +311,7 @@ onMounted(() => {
   fetchCalculateUsageInterval = window.setInterval(fetchCalculateUsage, 3000)
   fetchNetworkUsageInterval = window.setInterval(fetchNetworkUsage, 3000)
   fetchTotalUsageInterval = window.setInterval(fetchTotalUsage, 3000)
+  fetchVirtualUsageInterval = window.setInterval(fetchVirtualUsage, 3000)
 })
 
 onUnmounted(() => {
@@ -353,28 +390,6 @@ const fluctuateResources = () => {
     //   console.log(calculateresource);
   }, 3000); // 每3秒波动一次
 };
-
-fluctuateResources(); // 启动资源波动
-const fluctuateStoreUsage = () => {
-  setInterval(() => {
-    store_use.forEach((store) => {
-      store.value += Math.floor(Math.random() * 5) - 2; // value波动范围 -2 到 2
-
-      // 确保value不会小于0
-      store.value = Math.max(store.value, 0);
-    });
-
-    // 打印当前的store使用情况
-    //   console.log("store", store_use);
-  }, 3000); // 每3秒波动一次
-};
-
-fluctuateStoreUsage(); // 启动资源波动
-
-let currentTime = 50;  // 当前的时间（分钟：秒）
-
-
-
 
 function getNextTime(lastTime: string): string {
   const date = new Date(`2023-01-01T${lastTime}`);
