@@ -43,8 +43,8 @@ interface calculateresource {
   memory_use: number;
 }
 
-const k8s_class3_url = "http://10.212.67.19:8000";
-//const k8s_class3_url = "http://120.220.95.189:18888";
+//const k8s_class3_url = "http://10.212.67.19:8000";
+const k8s_class3_url = "http://120.220.95.189:18888";
 
 const task_num = reactive({
   total_task_Num: 0,
