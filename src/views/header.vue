@@ -29,7 +29,7 @@ timeFn()
     <div class="guang"></div>
     <div class="d-flex jc-center">
       <div class="title">
-        <span class="title-text">云边端协同系统平台</span>
+        <a href="http://http://120.220.95.189:12002/ai/train" class="title-text">云边端协同系统平台</a>
       </div>
     </div>
     <div class="timers">
@@ -120,6 +120,11 @@ timeFn()
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-decoration: none; /* 移除下划线 */
+    
+    &:hover {
+      opacity: 0.8; /* 添加悬停效果 */
+    }
   }
 }
 </style>
