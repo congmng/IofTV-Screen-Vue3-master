@@ -29,7 +29,7 @@ timeFn()
     <div class="guang"></div>
     <div class="d-flex jc-center">
       <div class="title">
-        <a href="http://http://120.220.95.189:12002/ai/train" class="title-text">云边端协同系统平台</a>
+        <a href="http://120.220.95.189:29088/ai/train" class="title-text">云边端协同系统平台</a>
       </div>
     </div>
     <div class="timers">

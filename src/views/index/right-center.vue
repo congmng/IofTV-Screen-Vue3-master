@@ -7,7 +7,8 @@ const props = defineProps<{
   config: object;
   data: Array<{
     name: string;
-    value: string | number;
+    used: string | number;
+    total: string | number;
   }>;
 }>();
 

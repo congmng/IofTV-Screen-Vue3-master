@@ -14,6 +14,7 @@ import RightBottom from "./right-bottom.vue";
 import New_Left_Top from "./new_left_top.vue";
 import new_daping_1 from "./new_daping_1.vue";
 import new_daping_2 from "./new_daping_2.vue";
+import new_daping_3 from "./new_daping_3.vue";
 import new_center_Bottom from "./new_center-bottom.vue";
 import { number } from "echarts";
 import { groupListApi } from "@/api/modules";
@@ -32,7 +33,8 @@ interface MapNode {
 
 interface storeuse {
   name: string;
-  value: number;
+  used: number;
+  total: number;
   layer: string;
 }
 
@@ -66,17 +68,20 @@ const taskList = reactive<task_detail[]>([
 const store_use = reactive<storeuse[]>([
   {
     name: "云集群1",
-    value: 10,
+    used: 10,
+    total: 100,
     layer: "cloud"
   },
   {
     name: "边集群1",
-    value: 8,
+    used: 8,
+    total: 80,
     layer: "edge"
   },
   {
     name: "端集群1",
-    value: 15,
+    used: 15,
+    total: 150,
     layer: "device"
   },
 ]);
@@ -141,13 +146,13 @@ const device_num = reactive([
 let fetchVirtualUsageInterval: number | null = null
 async function fetchVirtualUsage() {
   try {
-    const response = await fetch(k8s_class3_url+'/containers/counts')
+    const response = await fetch(k8s_class3_url + '/containers/counts')
     const data = await response.json()
-   // console.log('virtual total资源信息：', data);
+    // console.log('virtual total资源信息：', data);
     device_num[0].number = data.total_vms;
     device_num[1].number = data.total_containers;
-    device_num[2].number = data.total_metal_devices||0;
-   // console.log('虚拟机数：', device_num);
+    device_num[2].number = data.total_metal_devices || 0;
+    // console.log('虚拟机数：', device_num);
   } catch (error) {
     console.error('获取信息失败：', error)
   }
@@ -168,16 +173,16 @@ const total_data = reactive({
 let fetchTotalUsageInterval: number | null = null
 async function fetchTotalUsage() {
   try {
-    const response = await fetch(k8s_class3_url+'/dashboard/server-overview')
+    const response = await fetch(k8s_class3_url + '/dashboard/server-overview')
     const data = await response.json()
-  //  console.log('total资源信息：', data);
+    //  console.log('total资源信息：', data);
     total_data.cloudnum = data.cloud_size;
     total_data.edgenum = data.edge_size;
     total_data.devicenum = data.device_size;
     total_data.cpu = data.cpu_size;
     total_data.gpu = data.gpu_size;
-    total_data.memory = Math.trunc(data.ram_size/1024/1024/1024);
-    total_data.storage = Math.trunc(data.disk_size/1024/1024/1024/1024);
+    total_data.memory = Math.trunc(data.ram_size / 1024 / 1024 / 1024);
+    total_data.storage = Math.trunc(data.disk_size / 1024 / 1024 / 1024 / 1024);
     console.log('total资源信息：', total_data);
   } catch (error) {
     console.error('获取信息失败：', error)
@@ -206,9 +211,10 @@ const convertToDiskUse = (data) => {
       default: namePrefix = '节点';
     }
     const name = `${namePrefix}${typeCount[type]}`;
-    const value = item.used_size;
+    const used = item.used_size;
+    const total = item.total_size;
     const layer = item.layer;
-    return { name,value,layer };
+    return { name, used, total, layer };
   }
 
   );
@@ -218,19 +224,19 @@ const convertToDiskUse = (data) => {
 };
 async function fetchStorageUsage() {
   try {
-    const response = await fetch(k8s_class3_url+'/dashboard/storage')
+    const response = await fetch(k8s_class3_url + '/dashboard/storage')
     const data = await response.json()
     //console.log('存储资源信息：', data);
-    const data1= convertToDiskUse(data);
-    console.log('转换后的存储信息：', data,data1);
+    const data1 = convertToDiskUse(data);
+    console.log('转换后的存储信息：', data, data1);
     if (Array.isArray(data1)) {
-      // 替换整个 store_use 的内容
-      store_use.splice(0, store_use.length, 
+      store_use.splice(0, store_use.length,
         ...data1.map((item: any) => ({
           name: item.name,
-          value: Number(item.value/1024/1024/1024) || 0
+          used: Number((item.used / 1024 / 1024 / 1024).toFixed(2)) || 0,
+          total: Number((item.total / 1024 / 1024 / 1024).toFixed(2)) || 0,
         }))
-      )
+      );
     }
   } catch (error) {
     console.error('获取存储信息失败：', error)
@@ -240,7 +246,7 @@ async function fetchStorageUsage() {
 let fetchCalculateUsageInterval: number | null = null
 async function fetchCalculateUsage() {
   try {
-    const response = await fetch(k8s_class3_url+'/dashboard/compute')
+    const response = await fetch(k8s_class3_url + '/dashboard/compute')
     const data = await response.json()
     // console.log('计算资源信息：', data);
     const date = new Date();
@@ -248,9 +254,9 @@ async function fetchCalculateUsage() {
     const minutes = date.getMinutes(); // 分 (0-59)
     const seconds = date.getSeconds(); // 秒 (0-59)
     const formattedTime = `${hours}:${minutes}:${seconds}`;
-    const cpu = data.total.cpu_usage || 0;
-    const gpu = data.total.gpu_usage || 0;
-    const memory = data.total.ram_usage || 0;
+    const cpu = (data.total.cpu_usage*100 || 0).toFixed(2);
+    const gpu = (data.total.gpu_usage*100 || 0).toFixed(2);
+    const memory = (data.total.ram_usage*100 || 0).toFixed(2);
 
     chartData.category.push(formattedTime);
     chartData.cpu_data.push(cpu);
@@ -274,9 +280,9 @@ fetchCalculateUsage();
 let fetchNetworkUsageInterval: number | null = null
 async function fetchNetworkUsage() {
   try {
-    const response = await fetch(k8s_class3_url+'/dashboard/network')
+    const response = await fetch(k8s_class3_url + '/dashboard/network')
     const data = await response.json()
-   // console.log('网络资源信息：', data);
+    // console.log('网络资源信息：', data);
     const date = new Date();
     const hours = date.getHours();    // 时 (0-23)
     const minutes = date.getMinutes(); // 分 (0-59)
@@ -285,7 +291,7 @@ async function fetchNetworkUsage() {
     net_name[0] = '名称:' + data.device_network[0].device_name + ' 类型：' + data.device_network[0].network_type;
     net_name[1] = '名称:' + data.device_network[1].device_name + ' 类型：' + data.device_network[1].network_type;
     net_name[2] = '名称:' + data.device_network[2].device_name + ' 类型：' + data.device_network[2].network_type;
-   // console.log('网络名称：', net_name);
+    // console.log('网络名称：', net_name);
     net_xData.push(formattedTime);
     net_yData.push(data.device_network[0].latency);
     net_yData2.push(data.device_network[1].latency);
@@ -307,7 +313,7 @@ onMounted(() => {
   fetchStorageUsage();
   fetchCalculateUsage();
   fetchNetworkUsage();
-  fetchTotalUsage() 
+  fetchTotalUsage()
   fetchInterval = window.setInterval(fetchStorageUsage, 3000)
   fetchCalculateUsageInterval = window.setInterval(fetchCalculateUsage, 3000)
   fetchNetworkUsageInterval = window.setInterval(fetchNetworkUsage, 3000)
@@ -428,31 +434,6 @@ setInterval(addRandomPoint, 3000);
 <template>
   <div class="index-box">
     <div class="contetn_left">
-      <ItemWrap class="contetn_left-top contetn_lr-item" title="应用总览">
-        <New_Left_Top :newData="task_chartData" />
-      </ItemWrap>
-      <ItemWrap class="contetn_left-center contetn_lr-item" title="任务总览">
-
-        <LeftTop :totalTaskNum=task_num.total_task_Num :cloudTaskNum=task_num.cloud_task_Num
-          :edgeTaskNum=task_num.edge_task_Num :deviceTaskNum=task_num.device_task_Num />
-      </ItemWrap>
-      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="应用详情" style="padding: 0 10px 16px 10px">
-        <LeftBottom :list="taskList" />
-      </ItemWrap>
-    </div>
-    <div class="contetn_center">
-
-      <ItemWrap class="contetn_center-top" title="云边端资源总览">
-
-          <new_daping_2 :cloudnum="total_data.cloudnum" :edgenum="total_data.edgenum" :devicenum="total_data.devicenum" :cpu="total_data.cpu" :memory="total_data.memory" :gpu="total_data.gpu" :storage="total_data.storage"/>
-
-      </ItemWrap>
-      <ItemWrap class="contetn_center-bottom" title="云边端资源纳管总览">
-        <new_center_Bottom :virtual_-num="device_num[0].number" :docker_-num="device_num[1].number"
-          :meterial_-num="device_num[2].number"></new_center_Bottom>
-      </ItemWrap>
-    </div>
-    <div class="contetn_right">
       <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端计算资源总览">
         <!--RightCenter :data="store_use" /-->
         <CenterBottom :newData="chartData" />
@@ -465,6 +446,33 @@ setInterval(addRandomPoint, 3000);
       <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端存储资源总览 ">
         <!--RightBottom :data="calculateresource" /-->
         <RightCenter :data="store_use" />
+      </ItemWrap>
+    </div>
+    <div class="contetn_center">
+
+      <ItemWrap class="contetn_center-top" title="云边端资源总览">
+
+        <new_daping_3 :cloudnum="total_data.cloudnum" :edgenum="total_data.edgenum" :devicenum="total_data.devicenum"
+          :cpu="total_data.cpu" :memory="total_data.memory" :gpu="total_data.gpu" :storage="total_data.storage" />
+
+      </ItemWrap>
+      <ItemWrap class="contetn_center-bottom" title="云边端资源纳管总览">
+        <new_center_Bottom :virtual_-num="device_num[0].number" :docker_-num="device_num[1].number"
+          :meterial_-num="device_num[2].number"></new_center_Bottom>
+      </ItemWrap>
+    </div>
+    <div class="contetn_right">
+
+      <ItemWrap class="contetn_left-top contetn_lr-item" title="应用总览">
+        <New_Left_Top :newData="task_chartData" />
+      </ItemWrap>
+      <ItemWrap class="contetn_left-center contetn_lr-item" title="任务总览">
+
+        <LeftTop :totalTaskNum=task_num.total_task_Num :cloudTaskNum=task_num.cloud_task_Num
+          :edgeTaskNum=task_num.edge_task_Num :deviceTaskNum=task_num.device_task_Num />
+      </ItemWrap>
+      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="应用详情" style="padding: 0 10px 16px 10px">
+        <LeftBottom :list="taskList" />
       </ItemWrap>
     </div>
   </div>
@@ -518,6 +526,4 @@ setInterval(addRandomPoint, 3000);
 .contetn_lr-item {
   height: 310px;
 }
-
-
 </style>

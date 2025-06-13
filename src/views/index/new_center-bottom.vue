@@ -28,10 +28,9 @@ watch(
 );
 </script>
 
-
 <template>
-  <div class="zoom-container" style="transform: scale(1.1)">
-    <ul class="user_Overview flex">
+  <div class="zoom-container" style="transform: scale(1.2)">
+    <ul class="user_Overview">
       <li class="user_Overview-item" style="color: #00fdfa">
         <div class="user_Overview_nums allnum">
           <CountUp :endVal="state.total_task_Num" :duration="duration" />
@@ -55,30 +54,33 @@ watch(
 </template>
 
 <style scoped lang="scss">
-.left-top {
+.zoom-container {
   width: 100%;
-  height: 100%;
 }
 
 .user_Overview {
+  display: flex;
+  justify-content: center;  /* ✅ 中间对齐 */
+  gap: 80px;                /* ✅ 控制左右间距 */
+  padding: 20px 0;
+
   li {
-    flex: 1;
+    list-style: none;
+    text-align: center;
 
     p {
-      text-align: center;
-      height: 16px;
       font-size: 16px;
+      margin-top: 10px;
     }
 
     .user_Overview_nums {
       width: 100px;
       height: 100px;
-      text-align: center;
-      line-height: 100px;
       font-size: 22px;
-      margin: 50px auto 30px;
+      line-height: 100px;
+      margin: 20px auto;
       background-size: cover;
-      background-position: center center;
+      background-position: center;
       position: relative;
 
       &::before {
@@ -95,29 +97,30 @@ watch(
       }
     }
 
-    .allnum {
-      &::before {
-        background-image: url("@/assets/img/left_top_lan.png");
-      }
+    .allnum::before {
+      background-image: url("@/assets/img/left_top_lan.png");
     }
 
-    .online {
-      &::before {
-        background-image: url("@/assets/img/left_top_lv.png");
-      }
+    .online::before {
+      background-image: url("@/assets/img/left_top_lv.png");
     }
 
-    .offline {
-      &::before {
-        background-image: url("@/assets/img/left_top_huang.png");
-      }
+    .offline::before {
+      background-image: url("@/assets/img/left_top_huang.png");
     }
 
-    .laramnum {
-      &::before {
-        background-image: url("@/assets/img/left_top_hong.png");
-      }
+    .laramnum::before {
+      background-image: url("@/assets/img/left_top_hong.png");
     }
+  }
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>
