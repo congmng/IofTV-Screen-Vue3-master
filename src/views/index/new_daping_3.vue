@@ -313,7 +313,7 @@ const particleCount = 20;
     padding: 0 10px;
     font-weight: 600;
     letter-spacing: 1px;
-    font-size: 18px;
+    font-size: 25px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -392,16 +392,16 @@ const particleCount = 20;
 }
 
 .item-title {
-    font-size: 18px;
+    font-size: 22px;
     margin-bottom: 10px;
     font-weight: 500;
-    /*text-align: center;*/  
+    text-align: center;
 }
 
 .item-value {
     font-size: 28px;
     font-weight: 700;
-      /*text-align: center;*/  
+      text-align: center;
 }
 
 .total-node {

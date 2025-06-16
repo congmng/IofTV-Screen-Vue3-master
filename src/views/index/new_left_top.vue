@@ -12,37 +12,37 @@ const props = defineProps({
 
 const option = ref({});
 const sourceData = {
-    'HenanEP':'河南电力',
-    'ShandongHS':'山东高速',
-    'Cosmo':'卡奥斯制造'
-  };
+  'HenanEP': '河南电力',
+  'ShandongHS': '山东高速',
+  'Cosmo': '卡奥斯制造'
+};
 // 获取组列表
 const groupList = ref([]);
 const getGroupList = async () => {
   // const [res1, res2, res3]  = await Promise.all([groupListApi({Namespace: 'HenanEP'}), groupListApi({Namespace: 'ShandongHS'}), groupListApi({Namespace: 'Cosmo'})]);
-  let res1 = await groupListApi({NamespaceAll: ''});
+  let res1 = await groupListApi({ NamespaceAll: '' });
   const curData = res1.items;
   // 将 Unknown 和 Pending 合并
-  curData.forEach((item:any)=>{
-    if(item.status.copy_status === 'Unknown' || item.status.copy_status === 'Pending'){
+  curData.forEach((item: any) => {
+    if (item.status.copy_status === 'Unknown' || item.status.copy_status === 'Pending') {
       item.status.copy_status = 'Unknown';
     }
   })
   // 数据处理，先以应用类型分类
-  Object.keys(sourceData).forEach((val:any)=>{
-    curData[val] = curData.filter((v:any)=> v.namespace === val);
+  Object.keys(sourceData).forEach((val: any) => {
+    curData[val] = curData.filter((v: any) => v.namespace === val);
   })
   //console.log(curData,'curData');
   // 再根据应用类型进行应用状态分类
-  let status = ['Unknown','ReadyToDeploy','Running','Succeeded'];
+  let status = ['Unknown', 'ReadyToDeploy', 'Running', 'Succeeded'];
   let lineData = {};
-  Object.keys(sourceData).forEach((item:any)=>{
+  Object.keys(sourceData).forEach((item: any) => {
     let curStatusList = []; // 存储所有状态
-    status.forEach((val:any)=>{
-      curStatusList.push(curData[item].filter((v:any)=>v.status.phase === val).length);
+    status.forEach((val: any) => {
+      curStatusList.push(curData[item].filter((v: any) => v.status.phase === val).length);
     })
     // 设置总应用数
-    curStatusList.unshift(curStatusList.reduce((a:any,b:any)=>a+b,0));
+    curStatusList.unshift(curStatusList.reduce((a: any, b: any) => a + b, 0));
     lineData[item] = curStatusList;
   })
   groupList.value = lineData;
@@ -60,15 +60,60 @@ const setOption = (newData: any) => {
       formatter: (params: any) =>
         params.map((item: any) => `${item.seriesName}: ${item.value ?? '-'}`).join('<br>'),
     },
-    grid: { left: "50px", right: "40px", bottom: "30px", top: "20px" },
+    grid: {
+      show: true,
+      left: "10px",
+      right: "30px",
+      bottom: "10px",
+      top: "32px",
+      containLabel: true,
+      borderColor: "#1F63A3",
+    },
     xAxis: {
-      data: ['总应用数','待调度','待部署','运行中','已完成'],
-      axisLine: { lineStyle: { color: "#B4B4B4" } },
-      axisTick: { show: false },
+      data: ['总应用数', '待调度', '待部署', '运行中', '已完成'],
+      axisLine: {
+        show: true,
+        lineStyle: {
+          color: "rgba(147, 235, 248, 0.8)", // 使用与tooltip边框相同的科技蓝绿色
+          width: 1.5
+        }
+      },
+      axisTick: {
+        show: true,
+        alignWithLabel: true,
+        lineStyle: {
+          color: "rgba(147, 235, 248, 0.5)" // 半透明的刻度线
+        }
+      },
+      axisLabel: {
+        color: "#7EB7FD", // 保持原有的标签颜色
+        fontWeight: "500",
+        fontSize: 12,
+        interval: 0 // 强制显示所有标签
+      },
     },
     yAxis: {
       splitLine: { show: false },
-      axisLine: { lineStyle: { color: "#B4B4B4" } },
+      axisLine: {
+        show: true,
+        lineStyle: {
+          color: "rgba(147, 235, 248, 0.8)", // 使用与tooltip边框相同的科技蓝绿色
+          width: 1.5
+        }
+      },
+      axisTick: {
+        show: true,
+        alignWithLabel: true,
+        lineStyle: {
+          color: "rgba(147, 235, 248, 0.5)" // 半透明的刻度线
+        }
+      },
+      axisLabel: {
+        color: "#7EB7FD", // 保持原有的标签颜色
+        fontWeight: "500",
+        fontSize: 12,
+        interval: 0 // 强制显示所有标签
+      },
     },
     series: [
       {
@@ -78,7 +123,7 @@ const setOption = (newData: any) => {
         barWidth: 20,
         itemStyle: {
           color: "#4CAF50", // 蓝色
-          borderRadius: [0,0, 0, 0],
+          borderRadius: [0, 0, 0, 0],
         },
         data: groupList.value.HenanEP,
       },

@@ -47,34 +47,67 @@ const setOption = (newData: any) => {
       top: "0",
     },
     grid: {
-      left: "50px",
-      right: "40px",
-      bottom: "30px",
-      top: "20px",
+      show: true,
+      left: "10px",
+      right: "30px",
+      bottom: "10px",
+      top: "32px",
+      containLabel: true,
+      borderColor: "#1F63A3",
     },
     xAxis: {
       data: newData.category,
       axisLine: {
+        show: true,
         lineStyle: {
-          color: "#B4B4B4",
-        },
+          color: "rgba(147, 235, 248, 0.8)", // 使用与tooltip边框相同的科技蓝绿色
+          width: 1.5
+        }
       },
       axisTick: {
-        show: false,
+        show: true,
+        alignWithLabel: true,
+        lineStyle: {
+          color: "rgba(147, 235, 248, 0.5)" // 半透明的刻度线
+        }
+      },
+      axisLabel: {
+        color: "#7EB7FD", // 保持原有的标签颜色
+        fontWeight: "500",
+        fontSize: 12,
+        interval: 0 // 强制显示所有标签
       },
     },
     yAxis: [
       {
-        splitLine: { show: false },
         axisLine: {
+          show: true,
           lineStyle: {
-            color: "#B4B4B4",
-          },
+            color: "rgba(147, 235, 248, 0.8)", // 使用与tooltip边框相同的科技蓝绿色
+            width: 1.5
+          }
+        },
+        axisTick: {
+          show: true,
+          alignWithLabel: true,
+          lineStyle: {
+            color: "rgba(147, 235, 248, 0.5)" // 半透明的刻度线
+          }
         },
         axisLabel: {
+          color: "#7EB7FD", // 保持原有的标签颜色
           formatter: "{value}%",
+          fontSize: 12,
+          interval: 0 // 强制显示所有标签
         },
-      },
+        splitLine: {
+          show: false,
+          lineStyle: {
+            color: "rgba(100, 100, 100, 0.3)", // 更深的网格线
+            type: "dashed"
+          }
+        },
+      }
     ],
     series: [
       {
@@ -135,10 +168,7 @@ watch(
 </script>
 
 <template>
-    <v-chart class="chart" :option="option" v-if="JSON.stringify(option) != '{}'" />
+  <v-chart class="chart" :option="option" v-if="JSON.stringify(option) != '{}'" />
 </template>
 
-<style scoped>
-
-
-</style>
+<style scoped></style>

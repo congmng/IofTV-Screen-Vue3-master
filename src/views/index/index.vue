@@ -218,9 +218,9 @@ const convertToDiskUse = (data) => {
   }
 
   );
-  console.log('转换后的存储信息：', converted);
+  //console.log('转换后的存储信息：', converted);
   // 按类型优先级排序（云 → 边 → 端）
-  return converted.sort((a, b) => typePriority[a.type] - typePriority[b.type]);
+  return converted.sort((a, b) => typePriority[a.layer] - typePriority[b.layer]);
 };
 async function fetchStorageUsage() {
   try {
@@ -233,8 +233,8 @@ async function fetchStorageUsage() {
       store_use.splice(0, store_use.length,
         ...data1.map((item: any) => ({
           name: item.name,
-          used: Number((item.used / 1024 / 1024 / 1024).toFixed(2)) || 0,
-          total: Number((item.total / 1024 / 1024 / 1024).toFixed(2)) || 0,
+          used: Math.floor(item.used / 1024 / 1024 / 1024) || 0,
+          total: Math.floor(item.total / 1024 / 1024 / 1024) || 0,
         }))
       );
     }
