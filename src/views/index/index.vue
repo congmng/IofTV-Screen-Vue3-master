@@ -149,9 +149,13 @@ async function fetchVirtualUsage() {
     const response = await fetch(k8s_class3_url + '/containers/counts')
     const data = await response.json()
     // console.log('virtual total资源信息：', data);
-    device_num[0].number = data.total_vms;
-    device_num[1].number = data.total_containers;
-    device_num[2].number = data.total_metal_devices || 0;
+    const extra_docker = Number(import.meta.env.VITE_EXTRA_DOCKER_NUM);
+    const extra_virtual = Number(import.meta.env.VITE_EXTRA_VIRTUAL_NUM);
+    const extra_metal = Number(import.meta.env.VITE_EXTRA_PHYSICAL_NUM);
+    console.log('extra_virtual:', extra_virtual,extra_metal,extra_docker);
+    device_num[0].number = (data.total_vms||0)+extra_virtual;
+    device_num[1].number = (data.total_containers||0)+extra_docker;
+    device_num[2].number = (data.total_metal_devices||0)+extra_metal;
     // console.log('虚拟机数：', device_num);
   } catch (error) {
     console.error('获取信息失败：', error)
@@ -176,13 +180,20 @@ async function fetchTotalUsage() {
     const response = await fetch(k8s_class3_url + '/dashboard/server-overview')
     const data = await response.json()
     //  console.log('total资源信息：', data);
-    total_data.cloudnum = data.cloud_size;
-    total_data.edgenum = data.edge_size;
-    total_data.devicenum = data.device_size;
-    total_data.cpu = data.cpu_size;
-    total_data.gpu = data.gpu_size;
-    total_data.memory = Math.trunc(data.ram_size / 1024 / 1024 / 1024);
-    total_data.storage = Math.trunc(data.disk_size / 1024 / 1024 / 1024 / 1024);
+    const extra_cloud = Number(import.meta.env.VITE_EXTRA_CLOUD);
+    const extra_edge = Number(import.meta.env.VITE_EXTRA_EDGE);
+    const extra_device = Number(import.meta.env.VITE_EXTRA_DEVICE);
+    const extra_cpu = Number(import.meta.env.VITE_EXTRA_CPU_NUM);
+    const extra_gpu = Number(import.meta.env.VITE_EXTRA_GPU_NUM);
+    const extra_memory = Number(import.meta.env.VITE_EXTRA_RAM_SIZE);
+    const extra_storage = Number(import.meta.env.VITE_EXTRA_STORE_SIZE);
+    total_data.cloudnum = data.cloud_size+extra_cloud;
+    total_data.edgenum = data.edge_size+extra_edge;
+    total_data.devicenum = data.device_size+extra_device;
+    total_data.cpu = data.cpu_size+extra_cpu;
+    total_data.gpu = data.gpu_size+extra_gpu;
+    total_data.memory = Math.trunc(data.ram_size / 1024 / 1024 / 1024+extra_memory);
+    total_data.storage = Math.trunc(data.disk_size / 1024 / 1024 / 1024 / 1024+extra_storage/1024);
     console.log('total资源信息：', total_data);
   } catch (error) {
     console.error('获取信息失败：', error)
@@ -199,7 +210,28 @@ const convertToDiskUse = (data) => {
   type NodeType = "cloud" | "edge" | "device";
   // const data1=toRaw(data.value);
   const typeCount = { cloud: 0, edge: 0, device: 0 };
-  const converted = data.storage_info.map(item => {
+    let extra_store_use: any[] = [];
+  try {
+    extra_store_use = JSON.parse(import.meta.env.VITE_STORE_USE || '[]').map((item: any) => ({
+      name: item.name,
+      used_size: item.used * 1024 ** 3,     // GB 转 Byte
+      total_size: item.total * 1024 ** 3,
+      layer: item.layer
+    }));
+  } catch (err) {
+    console.error('解析 VITE_STORE_USE 出错：', err);
+  }
+
+  // 2. 确保原始数据结构正确
+  if (!Array.isArray(data.storage_info)) {
+    console.error('data.storage_info 不是数组：', data.storage_info);
+    return [];
+  }
+
+  // 3. 合并数据
+  const mergedList = [...data.storage_info, ...extra_store_use];
+  console.log('合并后的存储信息：', mergedList);
+  const converted = mergedList.map(item => {
     const type: NodeType = item.layer as NodeType;;
     typeCount[type] += 1;
 
