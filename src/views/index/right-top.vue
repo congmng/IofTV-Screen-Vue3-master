@@ -90,7 +90,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
       borderColor: "#1F63A3",
     },
     series: [
-      {
+     /* {
         data: yData,
         type: "line",
         smooth: true,
@@ -103,7 +103,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
             { offset: 1, color: "rgba(252,144,16,.0)" },
           ], false),
         },
-      },
+      },*/
       {
         data: yData2,
         type: "line",
