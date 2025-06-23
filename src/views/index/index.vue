@@ -46,7 +46,7 @@ interface calculateresource {
 }
 
 //const k8s_class3_url = "http://10.212.67.19:8000";
-const k8s_class3_url = "http://120.220.95.189:18888";
+const k8s_class3_url = "http://120.220.95.189:8901";
 
 const task_num = reactive({
   total_task_Num: 0,
@@ -326,7 +326,7 @@ async function fetchNetworkUsage() {
     // console.log('网络名称：', net_name);
     net_xData.push(formattedTime);
     net_yData.push(data.device_network[0].latency);
-    net_yData2.push(data.device_network[1].latency);
+    net_yData2.push(data.device_network[1].latency*20);
     net_yData3.push(data.device_network[2].latency);
     if (net_xData.length > 7) {
       net_xData.shift(); // 移除第一个元素
@@ -340,6 +340,88 @@ async function fetchNetworkUsage() {
     console.error('获取信息失败：', error)
   }
 }
+
+
+async function fetchClusterNetIO(clusterId, node, token) {
+  const apiUrl = `http://120.220.95.189:8078/management/cluster_net_io`;
+  
+  try {
+    const response = await fetch(`${apiUrl}?cluster_id=${clusterId}&node=${node}`, {
+      headers: {
+        'token': token,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    // 检查业务状态码
+    if (result.code !== 200) {
+      throw new Error(`API Error: ${result.message || 'Unknown error'}`);
+    }
+
+    // 数据转换处理
+    return {
+      timestamp: result.timestamp,
+      summary: processMetrics(result.data.summary_data),
+      details: processDetailData(result.data.detaile_data)
+    };
+
+  } catch (error) {
+    console.error('获取网络IO数据失败:', error);
+    throw error; // 重新抛出以便外部处理
+  }
+}
+
+// 处理指标数据（汇总和详情通用）
+function processMetrics(metrics) {
+  return metrics.map(metric => ({
+    name: metric.name,
+    unit: metric.units,
+    current: parseFloat(metric.hds[0]?.value || 0),
+    max: parseFloat(metric.max),
+    min: parseFloat(metric.min),
+    history: metric.hds.map(item => ({
+      time: item.clock,
+      value: parseFloat(item.value)
+    }))
+  }));
+}
+
+// 处理节点详情数据
+function processDetailData(detailData) {
+  return Object.keys(detailData).reduce((acc, ip) => {
+    acc[ip] = processMetrics(detailData[ip]);
+    return acc;
+  }, {});
+}
+
+// 使用示例
+const token = 'bt1biafhapv2rpmhqofokwm7hnfotsi6lpno2fpgbkuoxlh5fsmimafucyp3';
+
+fetchClusterNetIO(21, 1, token)
+  .then(data => {
+    console.log('集群网络数据:', data);
+    // 示例输出结构：
+    // {
+    //   timestamp: "2025-06-23 10:30:35",
+    //   summary: [
+    //     { name: "网络输入", unit: "Bps", current: 37198, ... },
+    //     { name: "网络输出", unit: "Bps", current: 162712, ... }
+    //   ],
+    //   details: {
+    //     "10.31.10.20": [...],
+    //     "10.31.10.19": [...]
+    //   }
+    // }
+  })
+  .catch(error => {
+    console.error('操作失败:', error);
+  });
 
 onMounted(() => {
   fetchStorageUsage();

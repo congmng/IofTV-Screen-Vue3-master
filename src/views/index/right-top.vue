@@ -54,7 +54,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
     },
     yAxis: {
       type: "value",
-      name: '网络延迟',
+      name: '网络流量',
       splitLine: {
         show: true,
         lineStyle: {
@@ -69,7 +69,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
       axisLabel: {
         color: "#7EB7FD",
         fontWeight: "500",
-        formatter: '{value} ms',
+        formatter: '{value} Mbps',
       },
     },
     tooltip: {
@@ -79,6 +79,13 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
       textStyle: {
         color: "#FFF",
       },
+    },
+    legend: {
+      data: props.name,
+      textStyle: {
+        color: "#B4B4B4",
+      },
+      top: "0",
     },
     grid: {
       show: true,

@@ -111,9 +111,6 @@ const isHorizontal = computed(
 
 function dataWarm(list: any) {
   if (list && typeof list !== "boolean" && list.length > 100) {
-    console.warn(
-      `数据达到了${list.length}条有点多哦~,可能会造成部分老旧浏览器卡顿。`
-    );
   }
 }
 const floatStyle = computed<CSSProperties>(() => {
