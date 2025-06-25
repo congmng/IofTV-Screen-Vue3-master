@@ -25,12 +25,20 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  yData4: {
+    type: Array,
+    required: true,
+  },
+  yData5: {
+    type: Array,
+    required: true,
+  },
 });
 
 const option = ref({});
 
 // 设置图表的配置
-const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => {
+const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[],yData4: any[],yData5: any[]) => {
   option.value = {
     xAxis: {
       type: "category",
@@ -69,7 +77,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
       axisLabel: {
         color: "#7EB7FD",
         fontWeight: "500",
-        formatter: '{value} Mbps',
+        formatter: '{value} Kbps',
       },
     },
     tooltip: {
@@ -97,7 +105,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
       borderColor: "#1F63A3",
     },
     series: [
-     /* {
+      {
         data: yData,
         type: "line",
         smooth: true,
@@ -110,7 +118,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
             { offset: 1, color: "rgba(252,144,16,.0)" },
           ], false),
         },
-      },*/
+      },
       {
         data: yData2,
         type: "line",
@@ -139,18 +147,46 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[]) => 
           ], false),
         },
       },
+      {
+        data: yData3,
+        type: "line",
+        smooth: true,
+        symbol: "none", // 去除点
+        name: props.name[3],
+        color: "rgba(9,100,243,.7)",
+        areaStyle: {
+          color: new graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(9,102,243,.7)" },
+            { offset: 1, color: "rgba(9,102,243,.0)" },
+          ], false),
+        },
+      },
+      {
+        data: yData3,
+        type: "line",
+        smooth: true,
+        symbol: "none", // 去除点
+        name: props.name[4],
+        color: "rgba(9,100,243,.7)",
+        areaStyle: {
+          color: new graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(9,102,243,.7)" },
+            { offset: 1, color: "rgba(9,102,243,.0)" },
+          ], false),
+        },
+      },
     ],
   };
 };
 
 onMounted(() => {
-  setOption(props.xData, props.yData, props.yData2, props.yData3);
+  setOption(props.xData, props.yData, props.yData2, props.yData3,props.yData4, props.yData5);
 });
 
 watch(
-  () => [props.xData, props.yData, props.yData2, props.yData3],
-  ([newX, newY, newY2, newY3]) => {
-    setOption(newX, newY, newY2, newY3);
+  () => [props.xData, props.yData, props.yData2, props.yData3,props.yData4, props.yData5],
+  ([newX, newY, newY2, newY3,newY4, newY5]) => {
+    setOption(newX, newY, newY2, newY3,newY4, newY5);
   },
   { deep: true }  // ✅ 深度监听数组内容变化
 );

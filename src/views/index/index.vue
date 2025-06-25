@@ -108,10 +108,12 @@ const calculateresource = reactive<calculateresource[]>([
 ]);
 
 const net_name = reactive(["边节点1-天数盒子固网", "边节点2-天数盒子wifi", "边节点3-天数盒子wifi"]);
-const net_xData = reactive(["19:45:00", "19:45:10", "19:45:20", "19:45:30", "19:45:40", "19:45:50", "19:46:00"]);
-const net_yData = reactive([10, 17, 15, 14, 15, 16, 17]);
-const net_yData2 = reactive([30, 20, 11, 20, 36, 11, 22]);
-const net_yData3 = reactive([20, 40, 30, 40, 42, 51, 30]);
+const net_xData = reactive([]);
+const net_yData = reactive([ ]);
+const net_yData2 = reactive([]);
+const net_yData3 = reactive([]);
+const net_yData4 = reactive([]);
+const net_yData5 = reactive([ ]);
 
 const task_chartData = reactive({
   category: ['总应用数', '排队中', '运行中', '已完成'],
@@ -152,10 +154,10 @@ async function fetchVirtualUsage() {
     const extra_docker = Number(import.meta.env.VITE_EXTRA_DOCKER_NUM);
     const extra_virtual = Number(import.meta.env.VITE_EXTRA_VIRTUAL_NUM);
     const extra_metal = Number(import.meta.env.VITE_EXTRA_PHYSICAL_NUM);
-    console.log('extra_virtual:', extra_virtual,extra_metal,extra_docker);
-    device_num[0].number = (data.total_vms||0)+extra_virtual;
-    device_num[1].number = (data.total_containers||0)+extra_docker;
-    device_num[2].number = (data.total_metal_devices||0)+extra_metal;
+    console.log('extra_virtual:', extra_virtual, extra_metal, extra_docker);
+    device_num[0].number = (data.total_vms || 0) + extra_virtual;
+    device_num[1].number = (data.total_containers || 0) + extra_docker;
+    device_num[2].number = (data.total_metal_devices || 0) + extra_metal;
     // console.log('虚拟机数：', device_num);
   } catch (error) {
     console.error('获取信息失败：', error)
@@ -187,13 +189,13 @@ async function fetchTotalUsage() {
     const extra_gpu = Number(import.meta.env.VITE_EXTRA_GPU_NUM);
     const extra_memory = Number(import.meta.env.VITE_EXTRA_RAM_SIZE);
     const extra_storage = Number(import.meta.env.VITE_EXTRA_STORE_SIZE);
-    total_data.cloudnum = data.cloud_size+extra_cloud;
-    total_data.edgenum = data.edge_size+extra_edge;
-    total_data.devicenum = data.device_size+extra_device;
-    total_data.cpu = data.cpu_size+extra_cpu;
-    total_data.gpu = data.gpu_size+extra_gpu;
-    total_data.memory = Math.trunc(data.ram_size / 1024 / 1024 / 1024+extra_memory);
-    total_data.storage = Math.trunc(data.disk_size / 1024 / 1024 / 1024 / 1024+extra_storage/1024);
+    total_data.cloudnum = data.cloud_size + extra_cloud;
+    total_data.edgenum = data.edge_size + extra_edge;
+    total_data.devicenum = data.device_size + extra_device;
+    total_data.cpu = data.cpu_size + extra_cpu;
+    total_data.gpu = data.gpu_size + extra_gpu;
+    total_data.memory = Math.trunc(data.ram_size / 1024 / 1024 / 1024 + extra_memory);
+    total_data.storage = Math.trunc(data.disk_size / 1024 / 1024 / 1024 / 1024 + extra_storage / 1024);
     console.log('total资源信息：', total_data);
   } catch (error) {
     console.error('获取信息失败：', error)
@@ -210,7 +212,7 @@ const convertToDiskUse = (data) => {
   type NodeType = "cloud" | "edge" | "device";
   // const data1=toRaw(data.value);
   const typeCount = { cloud: 0, edge: 0, device: 0 };
-    let extra_store_use: any[] = [];
+  let extra_store_use: any[] = [];
   try {
     extra_store_use = JSON.parse(import.meta.env.VITE_STORE_USE || '[]').map((item: any) => ({
       name: item.name,
@@ -286,9 +288,9 @@ async function fetchCalculateUsage() {
     const minutes = date.getMinutes(); // 分 (0-59)
     const seconds = date.getSeconds(); // 秒 (0-59)
     const formattedTime = `${hours}:${minutes}:${seconds}`;
-    const cpu = (data.total.cpu_usage*100 || 0).toFixed(2);
-    const gpu = (data.total.gpu_usage*100 || 0).toFixed(2);
-    const memory = (data.total.ram_usage*100 || 0).toFixed(2);
+    const cpu = (data.total.cpu_usage * 100 || 0).toFixed(2);
+    const gpu = (data.total.gpu_usage * 100 || 0).toFixed(2);
+    const memory = (data.total.ram_usage * 100 || 0).toFixed(2);
 
     chartData.category.push(formattedTime);
     chartData.cpu_data.push(cpu);
@@ -316,23 +318,52 @@ async function fetchNetworkUsage() {
     const data = await response.json()
     // console.log('网络资源信息：', data);
     const date = new Date();
+    fetchClusterNetIO(21, 1, token)
+      .then(data => {
+        console.log('集群网络数据:', data);
+        let result = calculateAverageTraffic(data.details);
+        console.log('汇总数据:', data.details, result);
+        Object.entries(result).forEach(([ip, value]) => {
+          console.log(`IP ${ip} 的流量平均值:`, value);
+        });
+
+        // 或者存储到变量
+        const ipList = Object.keys(result); // ["10.31.10.20", "10.31.10.19"]
+        const values = Object.values(result);
+        net_yData.push(Math.floor(values[0] as number / 1000));
+        net_yData2.push(Math.floor(values[1] as number / 1000));
+        console.log('IP列表:', ipList, values);
+      })
+      .catch(error => {
+        console.error('操作失败:', error);
+      });
     const hours = date.getHours();    // 时 (0-23)
     const minutes = date.getMinutes(); // 分 (0-59)
     const seconds = date.getSeconds(); // 秒 (0-59)
     const formattedTime = `${hours}:${minutes}:${seconds}`;
-    net_name[0] = '名称:' + data.device_network[0].device_name + ' 类型：' + data.device_network[0].network_type;
-    net_name[1] = '名称:' + data.device_network[1].device_name + ' 类型：' + data.device_network[1].network_type;
-    net_name[2] = '名称:' + data.device_network[2].device_name + ' 类型：' + data.device_network[2].network_type;
+    //net_name[0] = '名称:' + data.device_network[0].device_name + ' 类型：' + data.device_network[0].network_type;
+    //net_name[1] = '名称:' + data.device_network[1].device_name + ' 类型：' + data.device_network[1].network_type;
+    //net_name[2] = '名称:' + data.device_network[2].device_name + ' 类型：' + data.device_network[2].network_type;
+    net_name[0] = ' 类型: wifi' ;
+    net_name[1] = ' 类型：固网' ;
+    net_name[2] = ' 类型: 4G' ;
+    net_name[3] = ' 类型: 5G' ;
+    net_name[4] = ' 类型: 卫星' ;
     // console.log('网络名称：', net_name);
     net_xData.push(formattedTime);
-    net_yData.push(data.device_network[0].latency);
-    net_yData2.push(data.device_network[1].latency*20);
-    net_yData3.push(data.device_network[2].latency);
-    if (net_xData.length > 7) {
+    net_yData3.push(Math.floor(0));
+    net_yData4.push(Math.floor(0));
+    net_yData5.push(Math.floor(0));
+    //net_yData.push(data.device_network[0].latency);
+   // net_yData2.push(data.device_network[1].latency);
+   // net_yData3.push(data.device_network[2].latency);
+    if (net_xData.length > 10) {
       net_xData.shift(); // 移除第一个元素
       net_yData.shift();
       net_yData2.shift();
       net_yData3.shift();
+      net_yData4.shift();
+      net_yData5.shift();
     }
 
     // 保持数组大小固定为7
@@ -344,7 +375,7 @@ async function fetchNetworkUsage() {
 
 async function fetchClusterNetIO(clusterId, node, token) {
   const apiUrl = `http://120.220.95.189:8078/management/cluster_net_io`;
-  
+
   try {
     const response = await fetch(`${apiUrl}?cluster_id=${clusterId}&node=${node}`, {
       headers: {
@@ -358,7 +389,7 @@ async function fetchClusterNetIO(clusterId, node, token) {
     }
 
     const result = await response.json();
-    
+
     // 检查业务状态码
     if (result.code !== 200) {
       throw new Error(`API Error: ${result.message || 'Unknown error'}`);
@@ -403,25 +434,21 @@ function processDetailData(detailData) {
 // 使用示例
 const token = 'bt1biafhapv2rpmhqofokwm7hnfotsi6lpno2fpgbkuoxlh5fsmimafucyp3';
 
-fetchClusterNetIO(21, 1, token)
-  .then(data => {
-    console.log('集群网络数据:', data);
-    // 示例输出结构：
-    // {
-    //   timestamp: "2025-06-23 10:30:35",
-    //   summary: [
-    //     { name: "网络输入", unit: "Bps", current: 37198, ... },
-    //     { name: "网络输出", unit: "Bps", current: 162712, ... }
-    //   ],
-    //   details: {
-    //     "10.31.10.20": [...],
-    //     "10.31.10.19": [...]
-    //   }
-    // }
-  })
-  .catch(error => {
-    console.error('操作失败:', error);
+function calculateAverageTraffic(details) {
+  const result = {};
+
+  Object.entries(details).forEach(([ip, metrics]) => {
+    // 提取输入和输出流量
+    const inTraffic = metrics.find(m => m.name.includes("输入"))?.current || 0;
+    const outTraffic = metrics.find(m => m.name.includes("输出"))?.current || 0;
+
+    // 计算平均流量（仅保留平均值）
+    result[ip] = (inTraffic + outTraffic) / 2;
   });
+
+  return result;
+}
+
 
 onMounted(() => {
   fetchStorageUsage();
@@ -519,28 +546,6 @@ function getNextTime(lastTime: string): string {
 }
 
 // 添加数据点
-function addRandomPoint() {
-  // 更新时间
-  const lastTime = net_xData[net_xData.length - 1];
-  const nextTime = getNextTime(lastTime);
-  net_xData.push(nextTime);
-  if (net_xData.length > 6) net_xData.shift(); // 控制最大长度
-
-  // 添加随机波动数据
-  const randomize = (val: number) => Math.max(0, Math.round(val + (Math.random() * 4 - 2)));
-
-  net_yData.push(randomize(net_yData.at(-1)!));
-  net_yData2.push(randomize(net_yData2.at(-1)!));
-  net_yData3.push(randomize(net_yData3.at(-1)!));
-
-  // 保持数组长度一致
-  if (net_yData.length > 20) net_yData.shift();
-  if (net_yData2.length > 20) net_yData2.shift();
-  if (net_yData3.length > 20) net_yData3.shift();
-}
-//console.log("net_yData", net_yData);
-// 定时更新（比如每秒）
-setInterval(addRandomPoint, 3000);
 
 
 </script>
@@ -554,7 +559,7 @@ setInterval(addRandomPoint, 3000);
       </ItemWrap>
       <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端多种接入网络" style="padding: 0 10px 16px 10px">
         <!--CenterBottom :newData="chartData" /-->
-        <RightTop :xData="net_xData" :yData="net_yData" :yData2="net_yData2" :yData3="net_yData3" :name="net_name" />
+        <RightTop :xData="net_xData" :yData="net_yData" :yData2="net_yData2" :yData3="net_yData3" :y-data4="net_yData4" :y-data5="net_yData5" :name="net_name" />
 
       </ItemWrap>
       <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端存储资源总览 ">
