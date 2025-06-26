@@ -107,13 +107,13 @@ const calculateresource = reactive<calculateresource[]>([
   },
 ]);
 
-const net_name = reactive(["边节点1-天数盒子固网", "边节点2-天数盒子wifi", "边节点3-天数盒子wifi"]);
-const net_xData = reactive([]);
-const net_yData = reactive([ ]);
-const net_yData2 = reactive([]);
-const net_yData3 = reactive([]);
-const net_yData4 = reactive([]);
-const net_yData5 = reactive([ ]);
+const net_name = reactive<string[]>([]);
+const net_xData = reactive<number[]>([]);
+const net_yData = reactive<number[]>([ ]);
+const net_yData2 = reactive<number[]>([]);
+const net_yData3 = reactive<number[]>([]);
+const net_yData4 = reactive<number[]>([]);
+const net_yData5 = reactive<number[]>([ ]);
 
 const task_chartData = reactive({
   category: ['总应用数', '排队中', '运行中', '已完成'],
@@ -196,7 +196,7 @@ async function fetchTotalUsage() {
     total_data.gpu = data.gpu_size + extra_gpu;
     total_data.memory = Math.trunc(data.ram_size / 1024 / 1024 / 1024 + extra_memory);
     total_data.storage = Math.trunc(data.disk_size / 1024 / 1024 / 1024 / 1024 + extra_storage / 1024);
-    console.log('total资源信息：', total_data);
+  //  console.log('total资源信息：', total_data);
   } catch (error) {
     console.error('获取信息失败：', error)
   }
@@ -232,7 +232,7 @@ const convertToDiskUse = (data) => {
 
   // 3. 合并数据
   const mergedList = [...data.storage_info, ...extra_store_use];
-  console.log('合并后的存储信息：', mergedList);
+ // console.log('合并后的存储信息：', mergedList);
   const converted = mergedList.map(item => {
     const type: NodeType = item.layer as NodeType;;
     typeCount[type] += 1;
@@ -262,7 +262,7 @@ async function fetchStorageUsage() {
     const data = await response.json()
     //console.log('存储资源信息：', data);
     const data1 = convertToDiskUse(data);
-    console.log('转换后的存储信息：', data, data1);
+  //  console.log('转换后的存储信息：', data, data1);
     if (Array.isArray(data1)) {
       store_use.splice(0, store_use.length,
         ...data1.map((item: any) => ({
@@ -314,25 +314,13 @@ fetchCalculateUsage();
 let fetchNetworkUsageInterval: number | null = null
 async function fetchNetworkUsage() {
   try {
-    const response = await fetch(k8s_class3_url + '/dashboard/network')
-    const data = await response.json()
     // console.log('网络资源信息：', data);
     const date = new Date();
-    fetchClusterNetIO(21, 1, token)
+    fetchClusterNetIO()
       .then(data => {
         console.log('集群网络数据:', data);
-        let result = calculateAverageTraffic(data.details);
-        console.log('汇总数据:', data.details, result);
-        Object.entries(result).forEach(([ip, value]) => {
-          console.log(`IP ${ip} 的流量平均值:`, value);
-        });
-
-        // 或者存储到变量
-        const ipList = Object.keys(result); // ["10.31.10.20", "10.31.10.19"]
-        const values = Object.values(result);
-        net_yData.push(Math.floor(values[0] as number / 1000));
-        net_yData2.push(Math.floor(values[1] as number / 1000));
-        console.log('IP列表:', ipList, values);
+        net_yData.push(Math.floor(data.wifi as number / 1000));
+        net_yData2.push(Math.floor(data.guwang as number / 1000));
       })
       .catch(error => {
         console.error('操作失败:', error);
@@ -373,11 +361,11 @@ async function fetchNetworkUsage() {
 }
 
 
-async function fetchClusterNetIO(clusterId, node, token) {
-  const apiUrl = `http://120.220.95.189:8078/management/cluster_net_io`;
+async function fetchClusterNetIO() {
+  const apiUrl = `http://120.220.95.189:8078/realtime/itemInfo?clusterId=21&appName=net&hostIds=4`;
 
   try {
-    const response = await fetch(`${apiUrl}?cluster_id=${clusterId}&node=${node}`, {
+    const response = await fetch(`${apiUrl}`, {
       headers: {
         'token': token,
         'Content-Type': 'application/json'
@@ -389,17 +377,18 @@ async function fetchClusterNetIO(clusterId, node, token) {
     }
 
     const result = await response.json();
-
+    console.log('networkAPI返回结果:', result.data['192.168.55.4'].net);
     // 检查业务状态码
     if (result.code !== 200) {
       throw new Error(`API Error: ${result.message || 'Unknown error'}`);
     }
-
+    const guwang = (result.data['192.168.55.4'].net[0].lastValue+result.data['192.168.55.4'].net[1].lastValue)/2;
+    const wifi = (result.data['192.168.55.4'].net[8].lastValue+result.data['192.168.55.4'].net[9].lastValue)/2;
     // 数据转换处理
     return {
-      timestamp: result.timestamp,
-      summary: processMetrics(result.data.summary_data),
-      details: processDetailData(result.data.detaile_data)
+      timestamp: result.data.timestamp,
+      guwang: guwang,
+      wifi: wifi,
     };
 
   } catch (error) {
@@ -408,46 +397,10 @@ async function fetchClusterNetIO(clusterId, node, token) {
   }
 }
 
-// 处理指标数据（汇总和详情通用）
-function processMetrics(metrics) {
-  return metrics.map(metric => ({
-    name: metric.name,
-    unit: metric.units,
-    current: parseFloat(metric.hds[0]?.value || 0),
-    max: parseFloat(metric.max),
-    min: parseFloat(metric.min),
-    history: metric.hds.map(item => ({
-      time: item.clock,
-      value: parseFloat(item.value)
-    }))
-  }));
-}
 
-// 处理节点详情数据
-function processDetailData(detailData) {
-  return Object.keys(detailData).reduce((acc, ip) => {
-    acc[ip] = processMetrics(detailData[ip]);
-    return acc;
-  }, {});
-}
 
 // 使用示例
 const token = 'bt1biafhapv2rpmhqofokwm7hnfotsi6lpno2fpgbkuoxlh5fsmimafucyp3';
-
-function calculateAverageTraffic(details) {
-  const result = {};
-
-  Object.entries(details).forEach(([ip, metrics]) => {
-    // 提取输入和输出流量
-    const inTraffic = metrics.find(m => m.name.includes("输入"))?.current || 0;
-    const outTraffic = metrics.find(m => m.name.includes("输出"))?.current || 0;
-
-    // 计算平均流量（仅保留平均值）
-    result[ip] = (inTraffic + outTraffic) / 2;
-  });
-
-  return result;
-}
 
 
 onMounted(() => {
@@ -582,7 +535,7 @@ function getNextTime(lastTime: string): string {
     </div>
     <div class="contetn_right">
 
-      <ItemWrap class="contetn_left-top contetn_lr-item" title="应用总览">
+      <ItemWrap class="contetn_left-top contetn_lr-item" title="任务流总览">
         <New_Left_Top :newData="task_chartData" />
       </ItemWrap>
       <ItemWrap class="contetn_left-center contetn_lr-item" title="任务总览">
@@ -590,7 +543,7 @@ function getNextTime(lastTime: string): string {
         <LeftTop :totalTaskNum=task_num.total_task_Num :cloudTaskNum=task_num.cloud_task_Num
           :edgeTaskNum=task_num.edge_task_Num :deviceTaskNum=task_num.device_task_Num />
       </ItemWrap>
-      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="应用详情" style="padding: 0 10px 16px 10px">
+      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="任务流详情" style="padding: 0 10px 16px 10px">
         <LeftBottom :list="taskList" />
       </ItemWrap>
     </div>

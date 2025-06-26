@@ -77,7 +77,7 @@ const setOption = (xData: any[], yData: any[], yData2: any[], yData3: any[],yDat
       axisLabel: {
         color: "#7EB7FD",
         fontWeight: "500",
-        formatter: '{value} Kbps',
+        formatter: '{value} KBps',
       },
     },
     tooltip: {

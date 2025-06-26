@@ -91,10 +91,10 @@ const comName = computed(() => {
               typeGreen: item.task_type == 1,
               typeYellow: item.task_type == 2,
             }">{{ item.task_type == 1
-              ? "训练任务"
+              ? "训练"
               : item.task_type == 2
-                ? "推理任务"
-                : "普通任务" }}</span>
+                ? "推理"
+                : "其他" }}</span>
 
             <div class="flex addresswrap">
               <div class="info" style="margin-right: 0px;">

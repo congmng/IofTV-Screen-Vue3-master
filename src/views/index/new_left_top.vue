@@ -34,7 +34,7 @@ const getGroupList = async () => {
   })
   //console.log(curData,'curData');
   // 再根据应用类型进行应用状态分类
-  let status = ['Unknown', 'ReadyToDeploy', 'Running', 'Succeeded'];
+  let status = ['Running',  'Succeeded','Unknown', 'ReadyToDeploy'];
   let lineData = {};
   Object.keys(sourceData).forEach((item: any) => {
     let curStatusList = []; // 存储所有状态
@@ -70,7 +70,7 @@ const setOption = (newData: any) => {
       borderColor: "#1F63A3",
     },
     xAxis: {
-      data: ['总应用数', '待调度', '待部署', '运行中', '已完成'],
+      data: ['总任务流数', '运行中' ,  '已完成','待调度', '待部署'],
       axisLine: {
         show: true,
         lineStyle: {
