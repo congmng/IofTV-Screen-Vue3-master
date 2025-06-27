@@ -52,6 +52,7 @@ $item_title_content-height: calc(100% - 38px);
     transform: rotate(180deg);
   }
   .title-inner {
+    font-size: 24px;
     font-weight: 900;
     letter-spacing: 2px;
     background: linear-gradient(

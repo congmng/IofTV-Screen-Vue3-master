@@ -21,7 +21,13 @@ const percentText = ref<string[]>([]);
 const totalText = ref<string[]>([]);
 
 const defaultConfig = reactive<DefaultConfigType>({
-  colors: ["#37a2da", "#32c5e9", "#67e0e3", "#9fe6b8", "#ffdb5c", "#ff9f7f", "#fb7293"],
+colors: [
+    "#FF0000", // 鲜艳红
+    "#00FF00", // 亮绿
+    "#0000FF", // 纯蓝
+    "#FF00FF", // 品红
+    "#FFA500"  // 橙色
+  ],
   unit: "",
   showValue: true,
 });
@@ -163,17 +169,20 @@ onMounted(() => {
       z-index: 1;
     }
 
-    .capsule-percent-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 12px;
-      color: #fff;
-      z-index: 2;
-      pointer-events: none;
-      white-space: nowrap;
-    }
+.capsule-percent-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: bold; /* 加粗 */
+  color: #fff;
+  text-shadow: 
+    0 0 2px #000,
+    0 0 4px #000; /* 多重阴影增强轮廓 */
+  z-index: 2;
+  pointer-events: none;
+}
   }
 
   .capsule-total-text {
