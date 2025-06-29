@@ -47,6 +47,7 @@ interface calculateresource {
 
 //const k8s_class3_url = "http://10.212.67.19:8000";
 const k8s_class3_url = "http://120.220.95.189:8901";
+const k8s_gpu_url= "http://120.220.95.189:8908";
 
 const task_num = reactive({
   total_task_Num: 0,
@@ -282,6 +283,9 @@ async function fetchCalculateUsage() {
   try {
     const response = await fetch(k8s_class3_url + '/dashboard/compute')
     const data = await response.json()
+    const response_gpu = await fetch('/aggregate_gpu_utilization')
+    const data_gpu = await response_gpu.json()
+    console.log('test_gpu',data_gpu);
     // console.log('计算资源信息：', data);
     const date = new Date();
     const hours = date.getHours();    // 时 (0-23)
@@ -289,7 +293,7 @@ async function fetchCalculateUsage() {
     const seconds = date.getSeconds(); // 秒 (0-59)
     const formattedTime = `${hours}:${minutes}:${seconds}`;
     const cpu = (data.total.cpu_usage * 100 || 0).toFixed(2);
-    const gpu = (data.total.gpu_usage * 100 || 0).toFixed(2);
+    const gpu = (data_gpu.global_avg_utilization * 100 || 0).toFixed(2);
     const memory = (data.total.ram_usage * 100 || 0).toFixed(2);
 
     chartData.category.push(formattedTime);

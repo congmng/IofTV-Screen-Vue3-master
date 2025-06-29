@@ -31,7 +31,16 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       port: 8911,
       open: false,
       strictPort: false,
-      // proxy: {}
+      proxy: {
+        '/aggregate_gpu_utilization': {
+          target: 'http://120.220.95.189:8908',
+          changeOrigin: true,
+          rewrite: (path) => path,
+          // 如果需要，可以添加更多配置
+          //secure: false, // 如果是https接口，需要配置这个参数
+          // ws: true, // 如果要代理websockets
+        }
+      }
     },
     resolve: {
       alias: {
