@@ -430,7 +430,8 @@ const fluctuateTaskNumbers = () => {
   setInterval(async () => {
     const res = await groupListApi({ NamespaceAll: '' });
     // console.log(res,'res');
-    const curData = res.items;
+    // 过滤掉状态错误的任务
+    const curData = res.items.filter((item: any) => item.status.phase != 'Failed');
     // 过滤出待调度的任务
     const readyToDeploy = curData.filter((item: any) => item.status.node);
     task_num.cloud_task_Num = readyToDeploy.filter((item: any) => item.status.node.startsWith('Cloud')).length
@@ -458,43 +459,8 @@ const task_fluctuateTaskNumbers = () => {
     //  console.log(task_num);
   }, 3000); // 每隔3秒波动一次
 };
-task_fluctuateTaskNumbers();
-const fluctuateNodeNumbers = () => {
-  setInterval(() => {
-    // 随机改变每个节点数的波动（-2 到 2）
-    node_num.total_node_Num += Math.floor(Math.random() * 5) - 2;
-    node_num.cloud_node_Num += Math.floor(Math.random() * 5) - 2;
-    node_num.edge_node_Num += Math.floor(Math.random() * 5) - 2;
-    node_num.device_node_Num += Math.floor(Math.random() * 5) - 2;
+task_fluctuateTaskNumbers();// 启动波动
 
-    // 确保节点数量保持在0以上
-    node_num.total_node_Num = Math.max(node_num.total_node_Num, 0);
-    node_num.cloud_node_Num = Math.max(node_num.cloud_node_Num, 0);
-    node_num.edge_node_Num = Math.max(node_num.edge_node_Num, 0);
-    node_num.device_node_Num = Math.max(node_num.device_node_Num, 0);
-  }, 3000); // 每隔3秒波动一次
-};
-
-fluctuateNodeNumbers();  // 启动波动
-
-const fluctuateResources = () => {
-  setInterval(() => {
-    // 遍历所有集群，给 cpu_use, gpu_use, memory_use 添加波动
-    calculateresource.forEach((cluster) => {
-      cluster.cpu_use += Math.floor(Math.random() * 5) - 2; // CPU波动范围 -2 到 2
-      cluster.gpu_use += Math.floor(Math.random() * 5) - 2; // GPU波动范围 -2 到 2
-      cluster.memory_use += Math.floor(Math.random() * 5) - 2; // 内存波动范围 -2 到 2
-
-      // 确保资源使用量不会小于0
-      cluster.cpu_use = Math.max(cluster.cpu_use, 0);
-      cluster.gpu_use = Math.max(cluster.gpu_use, 0);
-      cluster.memory_use = Math.max(cluster.memory_use, 0);
-    });
-
-    // 打印当前的资源使用情况
-    //   console.log(calculateresource);
-  }, 3000); // 每3秒波动一次
-};
 
 function getNextTime(lastTime: string): string {
   const date = new Date(`2023-01-01T${lastTime}`);
