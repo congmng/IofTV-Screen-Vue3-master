@@ -8,8 +8,13 @@ interface CapsuleData {
   total: number;
 }
 
+interface ColorRange {
+  threshold: number;
+  color: string;
+}
+
 interface DefaultConfigType {
-  colors: string[];
+  colorRanges: ColorRange[];
   unit: string;
   showValue: boolean;
 }
@@ -21,15 +26,15 @@ const percentText = ref<string[]>([]);
 const totalText = ref<string[]>([]);
 
 const defaultConfig = reactive<DefaultConfigType>({
-colors: [
-    "#FF0000", // 鲜艳红
-    "#00FF00", // 亮绿
-    "#0000FF", // 纯蓝
-    "#FF00FF", // 品红
-    "#FFA500"  // 橙色
+  colorRanges: [
+    { threshold: 0.2, color: "#52c41a" }, // 0-20%: 绿色
+    { threshold: 0.5, color: "#a0d911" }, // 20-50%: 浅绿
+    { threshold: 0.7, color: "#faad14" }, // 50-70%: 黄色
+    { threshold: 0.9, color: "#fa8c16" }, // 70-90%: 橙色
+    { threshold: 1.0, color: "#f5222d" }  // 90-100%: 红色
   ],
   unit: "",
-  showValue: true,
+  showValue: true
 });
 
 const props = withDefaults(
@@ -51,13 +56,36 @@ const pagedData = computed(() => {
   return props.data.slice(start, start + pageSize);
 });
 
+const getColorByUsage = (ratio: number): string => {
+  if (!mergedConfig.value?.colorRanges?.length) return "#1890ff";
+  
+  const range = mergedConfig.value.colorRanges.find(
+    range => ratio <= range.threshold
+  );
+  
+  return range?.color || mergedConfig.value.colorRanges.slice(-1)[0].color;
+};
+
 const calcData = () => {
   mergeConfig();
   calcCapsuleData();
 };
 
 const mergeConfig = () => {
-  mergedConfig.value = merge(cloneDeep(defaultConfig), props.config || {});
+  const defaultClone = cloneDeep(defaultConfig);
+  
+  if (props.config?.colors && Array.isArray(props.config.colors)) {
+    const colors = props.config.colors;
+    defaultClone.colorRanges = [
+      { threshold: 0.2, color: colors[0] || "#52c41a" },
+      { threshold: 0.5, color: colors[1] || "#a0d911" },
+      { threshold: 0.7, color: colors[2] || "#faad14" },
+      { threshold: 0.9, color: colors[3] || "#fa8c16" },
+      { threshold: 1.0, color: colors[4] || "#f5222d" }
+    ];
+  }
+  
+  mergedConfig.value = merge(defaultClone, props.config || {});
 };
 
 const calcCapsuleData = () => {
@@ -79,6 +107,7 @@ onMounted(() => {
   calcData();
 });
 </script>
+
 <template>
   <div class="dv-capsule-chart-outer">
     <div class="dv-capsule-chart">
@@ -93,7 +122,7 @@ onMounted(() => {
           <div class="capsule-bar-bg">
             <div class="capsule-bar-fill" :style="{
               width: `${ratio * 100}%`,
-              backgroundColor: mergedConfig.colors[index % mergedConfig.colors.length]
+              backgroundColor: getColorByUsage(ratio)
             }"></div>
             <div class="capsule-percent-text">{{ percentText[index] }}</div>
           </div>
