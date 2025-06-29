@@ -293,7 +293,7 @@ async function fetchCalculateUsage() {
     const seconds = date.getSeconds(); // 秒 (0-59)
     const formattedTime = `${hours}:${minutes}:${seconds}`;
     const cpu = (data.total.cpu_usage * 100 || 0).toFixed(2);
-    const gpu = (data_gpu.global_avg_utilization * 100 || 0).toFixed(2);
+    const gpu = (data_gpu.global_avg_utilization  || 0).toFixed(2);
     const memory = (data.total.ram_usage * 100 || 0).toFixed(2);
 
     chartData.category.push(formattedTime);

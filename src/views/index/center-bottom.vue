@@ -55,29 +55,50 @@ const setOption = (newData: any) => {
       containLabel: true,
       borderColor: "#1F63A3",
     },
-    xAxis: {
-      data: newData.category,
-      axisLine: {
-        show: true,
-        lineStyle: {
-          color: "rgba(147, 235, 248, 0.8)", // 使用与tooltip边框相同的科技蓝绿色
-          width: 1.5
+    xAxis: [
+      // CPU x轴
+      {
+        type: 'category',
+        data: newData.category,
+        position: 'bottom',
+        axisLabel: {
+          color: "#7EB7FD",
+          fontWeight: "500",
+          fontSize: 12,
+          interval: 0
+        },
+        axisLine: {
+          show: true,
+          lineStyle: {
+            color: "rgba(147, 235, 248, 0.8)",
+            width: 1.5
+          }
+        },
+        axisTick: {
+          show: true,
+          alignWithLabel: true,
+          lineStyle: {
+            color: "rgba(147, 235, 248, 0.5)"
+          }
         }
       },
-      axisTick: {
-        show: true,
-        alignWithLabel: true,
-        lineStyle: {
-          color: "rgba(147, 235, 248, 0.5)" // 半透明的刻度线
+      // GPU x轴（偏移显示）
+      {
+        type: 'category',
+        data: newData.category,
+        position: 'bottom',
+        offset: 20, // 向下偏移20像素
+        axisLabel: {
+          show: false // 隐藏第二个x轴的标签
+        },
+        axisLine: {
+          show: false
+        },
+        axisTick: {
+          show: false
         }
-      },
-      axisLabel: {
-        color: "#7EB7FD", // 保持原有的标签颜色
-        fontWeight: "500",
-        fontSize: 12,
-        interval: 0 // 强制显示所有标签
-      },
-    },
+      }
+    ],
     yAxis: [
       {
         axisLine: {
@@ -114,6 +135,9 @@ const setOption = (newData: any) => {
         name: "CPU使用率",
         type: "bar",
         barWidth: 10,
+        barGap: '20%', // 设置柱间间隔
+        barCategoryGap: '20%', // 设置类目间柱形间隔
+        xAxisIndex: 0, // 使用第一个x轴
         itemStyle: {
           borderRadius: 5,
           color: new graphic.LinearGradient(0, 0, 0, 1, [
@@ -121,23 +145,45 @@ const setOption = (newData: any) => {
             { offset: 1, color: "#3EACE5" },
           ]),
         },
-        data: newData.cpu_data,
+        data: newData.cpu_data.map((value, index) => {
+          return {
+            value: value,
+            itemStyle: {
+              color: new graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: "#956FD4" },
+                { offset: 1, color: "#3EACE5" },
+              ]),
+            }
+          };
+        }),
       },
       {
         name: "GPU使用率",
         type: "bar",
-        barGap: "-100%",
         barWidth: 10,
+        barGap: '20%', // 设置柱间间隔
+        barCategoryGap: '20%', // 设置类目间柱形间隔
+        xAxisIndex: 0, // 使用第一个x轴
         itemStyle: {
           borderRadius: 5,
           color: new graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "rgba(156,107,211,0.8)" },
-            { offset: 0.2, color: "rgba(156,107,211,0.5)" },
-            { offset: 1, color: "rgba(156,107,211,0.2)" },
+            { offset: 0, color: "#FF6B6B" },
+            { offset: 0.5, color: "#FF8E53" },
+            { offset: 1, color: "#FFD166" },
           ]),
         },
-        z: -12,
-        data: newData.gpu_data,
+        data: newData.gpu_data.map((value, index) => {
+          return {
+            value: value,
+            itemStyle: {
+              color: new graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: "#FF6B6B" },
+                { offset: 0.5, color: "#FF8E53" },
+                { offset: 1, color: "#FFD166" },
+              ]),
+            }
+          };
+        }),
       },
       {
         name: "内存使用率",
@@ -146,13 +192,13 @@ const setOption = (newData: any) => {
         showAllSymbol: true,
         symbol: "emptyCircle",
         symbolSize: 8,
-        yAxisIndex: 0,  // 使用左侧的 Y 轴
+        yAxisIndex: 0,
         itemStyle: {
           color: "#F02FC2",
         },
         data: newData.memory_data,
-      },
-    ],
+      }
+    ]
   };
 };
 
