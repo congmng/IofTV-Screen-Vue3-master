@@ -283,7 +283,7 @@ async function fetchCalculateUsage() {
   try {
     const response = await fetch(k8s_class3_url + '/dashboard/compute')
     const data = await response.json()
-    const response_gpu = await fetch('/aggregate_gpu_utilization')
+    const response_gpu = await fetch('http://120.220.95.189:8908/aggregate_gpu_utilization')
     const data_gpu = await response_gpu.json()
     console.log('test_gpu',data_gpu);
     // console.log('计算资源信息：', data);
