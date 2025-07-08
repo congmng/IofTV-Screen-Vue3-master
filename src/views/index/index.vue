@@ -366,7 +366,7 @@ async function fetchNetworkUsage() {
 
 
 async function fetchClusterNetIO() {
-  const apiUrl = `http://120.220.95.189:8078/realtime/itemInfo?clusterId=21&appName=net&hostIds=4`;
+  const apiUrl = `http://120.220.95.189:8078/realtime/itemInfo?clusterId=21&appName=net&hostIds=2`;
 
   try {
     const response = await fetch(`${apiUrl}`, {
@@ -381,13 +381,13 @@ async function fetchClusterNetIO() {
     }
 
     const result = await response.json();
-    console.log('networkAPI返回结果:', result.data['192.168.55.4'].net);
+    console.log('networkAPI返回结果:', result.data['192.168.55.2'].net);
     // 检查业务状态码
     if (result.code !== 200) {
       throw new Error(`API Error: ${result.message || 'Unknown error'}`);
     }
-    const guwang = (result.data['192.168.55.4'].net[0].lastValue+result.data['192.168.55.4'].net[1].lastValue)/2;
-    const wifi = (result.data['192.168.55.4'].net[8].lastValue+result.data['192.168.55.4'].net[9].lastValue)/2;
+    const guwang = (result.data['192.168.55.2'].net[0].lastValue+result.data['192.168.55.2'].net[1].lastValue)/2;
+    const wifi = (result.data['192.168.55.2'].net[8].lastValue+result.data['192.168.55.2'].net[9].lastValue)/2;
     // 数据转换处理
     return {
       timestamp: result.data.timestamp,
@@ -513,7 +513,7 @@ function getNextTime(lastTime: string): string {
         <LeftTop :totalTaskNum=task_num.total_task_Num :cloudTaskNum=task_num.cloud_task_Num
           :edgeTaskNum=task_num.edge_task_Num :deviceTaskNum=task_num.device_task_Num />
       </ItemWrap>
-      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="任务流详情" style="padding: 0 10px 16px 10px">
+      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="任务详情" style="padding: 0 10px 16px 10px">
         <LeftBottom :list="taskList" />
       </ItemWrap>
     </div>
