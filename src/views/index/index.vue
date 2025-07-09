@@ -428,18 +428,29 @@ onUnmounted(() => {
 })
 const fluctuateTaskNumbers = () => {
   setInterval(async () => {
-    const res = await groupListApi({ NamespaceAll: '' });
-    // console.log(res,'res');
-    // 过滤掉状态错误的任务
-    const curData = res.items.filter((item: any) => item.status.phase != 'Failed');
-    // 过滤出待调度的任务
-    const readyToDeploy = curData.filter((item: any) => item.status.node);
-    task_num.cloud_task_Num = readyToDeploy.filter((item: any) => item.status.node.startsWith('Cloud')).length
-    task_num.edge_task_Num = readyToDeploy.filter((item: any) => item.status.node.startsWith('Edge')).length
-    task_num.device_task_Num = readyToDeploy.filter((item: any) => item.status.node.startsWith('End')).length
-    task_num.total_task_Num = Number(task_num.cloud_task_Num) + Number(task_num.edge_task_Num) + Number(task_num.device_task_Num)
-    //  console.log(task_num);
-  }, 3000); // 每隔3秒波动一次
+    try {
+      const apiUrl = `http://120.220.95.189:8899/framework/v1/groups?NamespaceAll=`;
+      const response = await fetch(apiUrl);
+      const responseData = await response.json(); // 只调用一次json()
+      console.log("testclass4-self", responseData);
+
+      // 使用responseData代替原来的res
+      // 过滤掉状态错误的任务
+      const curData = responseData.items.filter((item) => item.status.phase != 'Failed');
+      // 过滤出待调度的任务
+      const readyToDeploy = curData.filter((item) => item.status.node);
+      
+      // 更新task_num对象
+      task_num.cloud_task_Num = readyToDeploy.filter((item) => item.status.node.startsWith('Cloud')).length;
+      task_num.edge_task_Num = readyToDeploy.filter((item) => item.status.node.startsWith('Edge')).length;
+      task_num.device_task_Num = readyToDeploy.filter((item) => item.status.node.startsWith('End')).length;
+      task_num.total_task_Num = Number(task_num.cloud_task_Num) + Number(task_num.edge_task_Num) + Number(task_num.device_task_Num);
+      
+      console.log(task_num);
+    } catch (error) {
+      console.error("请求出错:", error);
+    }
+  }, 3000); // 每隔3秒执行一次
 };
 
 fluctuateTaskNumbers();
