@@ -491,7 +491,7 @@ function getNextTime(lastTime: string): string {
         <!--RightCenter :data="store_use" /-->
         <CenterBottom :newData="chartData" />
       </ItemWrap>
-      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端多种接入网络" style="padding: 0 10px 16px 10px">
+      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端网络资源总览" style="padding: 0 10px 16px 10px">
         <!--CenterBottom :newData="chartData" /-->
         <RightTop :xData="net_xData" :yData="net_yData" :yData2="net_yData2" :yData3="net_yData3" :y-data4="net_yData4" :y-data5="net_yData5" :name="net_name" />
 
@@ -516,15 +516,15 @@ function getNextTime(lastTime: string): string {
     </div>
     <div class="contetn_right">
 
-      <ItemWrap class="contetn_left-top contetn_lr-item" title="任务流总览">
+      <ItemWrap class="contetn_left-top contetn_lr-item" title="云边端任务流总览">
         <New_Left_Top :newData="task_chartData" />
       </ItemWrap>
-      <ItemWrap class="contetn_left-center contetn_lr-item" title="任务总览">
+      <ItemWrap class="contetn_left-center contetn_lr-item" title="云边端任务总览">
 
         <LeftTop :totalTaskNum=task_num.total_task_Num :cloudTaskNum=task_num.cloud_task_Num
           :edgeTaskNum=task_num.edge_task_Num :deviceTaskNum=task_num.device_task_Num />
       </ItemWrap>
-      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="任务详情" style="padding: 0 10px 16px 10px">
+      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="云边端任务详情" style="padding: 0 10px 16px 10px">
         <LeftBottom :list="taskList" />
       </ItemWrap>
     </div>
