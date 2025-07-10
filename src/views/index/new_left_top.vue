@@ -21,7 +21,10 @@ const groupList = ref([]);
 const getGroupList = async () => {
   // const [res1, res2, res3]  = await Promise.all([groupListApi({Namespace: 'HenanEP'}), groupListApi({Namespace: 'ShandongHS'}), groupListApi({Namespace: 'Cosmo'})]);
   let res1 = await groupListApi({NamespaceAll: ''});
-  const curData = res1.items;
+  const apiUrl = `http://120.220.95.189:8899/framework/v1/groups?NamespaceAll=`;
+  const response = await fetch(apiUrl);
+  const responseData = await response.json(); // 只调用一次json()
+  const curData = responseData.items;
   // 将 Unknown 和 Pending 合并
   curData.forEach((item:any)=>{
     if(item.status.copy_status === 'Unknown' || item.status.copy_status === 'Pending'){

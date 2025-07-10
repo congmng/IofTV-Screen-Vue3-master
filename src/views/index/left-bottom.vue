@@ -38,7 +38,10 @@ const state = reactive<any>({
 
 const getList = async () => {
   const res = await groupListApi({NamespaceAll: ''});
-  const curData = res.items;
+  const apiUrl = `http://120.220.95.189:8899/framework/v1/groups?NamespaceAll=`;
+  const response = await fetch(apiUrl);
+  const responseData = await response.json(); // 只调用一次json()
+  const curData = responseData.items;
   curData.forEach((item: any, index: number) => {
     // 判断是否有label属性
     item.task_type = item.labels.hasOwnProperty('type')?item.labels.type == 'Train'?2:1
